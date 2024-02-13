@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col gap-5 items-center min-h-screen">
+
+    <div class="flex gap-3">
+        <!-- profile update -->
+        <a href="{% url 'profile_update' %}"
+            class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 mt-5 rounded focus:outline-none focus:shadow-outline">Update
+            Profile</a>
+
+        <!-- transaction report -->
+        <a href=""
+            class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 mt-5 rounded focus:outline-none focus:shadow-outline">Transaction
+            Report</a>
+    </div>
+
+    <!-- borrowed books list -->
+    <div class="p-14 bg-gray-100 rounded-lg shadow-md w-full">
+        <h1 class="text-3xl font-bold text-center mb-8">Borrowed Books</h1>
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-2 text-left">Cover</th>
+                        <th class="px-4 py-2 text-left">Title</th>
+                        <th class="px-4 py-2 text-left">Author</th>
+                        <th class="px-4 py-2 text-left">Description</th>
+                        <th class="px-4 py-2 text-left">Borrowing Price</th>
+                        <th class="px-4 py-2 text-left">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                    <tr>
+                        <td class="border px-4 py-2"><img src="{{ book.cover.url }}" alt="{{ book.title }}"
+                                class="w-32 h-auto"></td>
+                        <td class="border px-4 py-2">{{ book.title }}</td>
+                        <td class="border px-4 py-2">{{ book.author }}</td>
+                        <td class="border px-4 py-2">{{ book.description | truncatewords:5 }}</td>
+                        <td class="border px-4 py-2">${{ book.borrowing_price }}</td>
+                        <td class="border px-4 py-2"><a href=""
+                                class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline">Return</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td class="border px-4 py-2" colspan="4">You haven't borrowed any books yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+{% endblock %}

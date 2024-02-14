@@ -61,7 +61,7 @@ class BorrowBookView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         messages.success(self.request, 'Book borrowed successfully!')
-        return reverse_lazy('transactions')
+        return reverse_lazy('profile')
 
 
 class ReturnBookView(LoginRequiredMixin, View):

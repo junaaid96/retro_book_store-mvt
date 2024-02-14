@@ -13,8 +13,7 @@ class Book(models.Model):
     category = models.ManyToManyField(Category)
     total_copies = models.IntegerField(default=1)
     review = models.TextField(blank=True, null=True)
-    borrowed_by = models.ForeignKey(
-        UserAccount, related_name='books', on_delete=models.CASCADE, blank=True, null=True)
+    borrowed_by = models.ManyToManyField(UserAccount, related_name='borrowed_books', blank=True)
 
     def __str__(self):
         return f"{self.title} - {self.author} - {self.borrowing_price}"

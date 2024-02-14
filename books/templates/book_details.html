@@ -20,18 +20,18 @@
                         {% endfor %}
                     </p>
                     <p class="text-gray-700 mb-4">Available Copies: {{ book.total_copies }}</p>
-                    {% if user_account == book.borrowed_by %}
+                    {% if user_account in book.borrowed_by.all %}
                     <button class="font-bold py-2 px-4 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
                         Already Borrowed
                     </button>
-                    {% endif %}
-                    {% if user_account != book.borrowed_by %}
+                    {% else %}
                     <form method="post" action="{% url 'borrow_book' book.id %}">
                         {% csrf_token %}
                         <input type="submit" value="Borrow"
                             class="font-bold py-2 px-4 rounded w-full bg-yellow-800 text-white hover:bg-yellow-900 cursor-pointer">
                     </form>
                     {% endif %}
+
                 </div>
             </div>
         </div>

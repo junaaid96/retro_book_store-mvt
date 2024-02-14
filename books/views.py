@@ -53,7 +53,7 @@ class BorrowBookView(LoginRequiredMixin, CreateView):
         user_account.balance -= book.borrowing_price
         user_account.save()
 
-        book.borrowed_by = user_account
+        book.borrowed_by.add(user_account)
         book.total_copies -= 1
         book.save()
 
@@ -66,13 +66,14 @@ class BorrowBookView(LoginRequiredMixin, CreateView):
 
 class ReturnBookView(LoginRequiredMixin, View):
     def post(self, request, transaction_id):
+        user_account = UserAccount.objects.get(user=request.user)
         transaction = get_object_or_404(Transaction, id=transaction_id)
         book = transaction.borrowed_book
 
         transaction.return_timestamp = timezone.now()
         transaction.save()
 
-        book.borrowed_by = None
+        book.borrowed_by.remove(user_account)
         book.total_copies += 1
         book.save()
 

@@ -7,7 +7,7 @@ from users.models import UserAccount
 
 class TransactionsListView(LoginRequiredMixin, ListView):
     model = Transaction
-    template_name = 'transactions.html'
+    template_name = 'profile.html'
     context_object_name = 'transactions'
 
     def get_queryset(self):

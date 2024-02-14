@@ -12,16 +12,16 @@
             class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 mt-5 rounded focus:outline-none focus:shadow-outline">Update
             Profile</a>
 
-        <!-- transaction report -->
-        <a href="{% url 'transactions' %}"
-            class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 mt-5 rounded focus:outline-none focus:shadow-outline">Transaction
-            Report</a>
+        <!-- transactions -->
+        <a href=""
+            class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 mt-5 rounded focus:outline-none focus:shadow-outline">Transactions</a>
     </div>
 
     <!-- borrowed books list -->
     <div class="p-14 bg-gray-100 rounded-lg shadow-md w-full">
-        <h1 class="text-3xl font-bold text-center mb-8">Borrowed Books</h1>
-        <div class="overflow-x-auto">
+        <h1 class="text-3xl font-bold text-center mb-8">Borrowing History</h1>
+        {% if transactions %}
+        <div class="overflow-x-auto text-center">
             <table class="table-auto w-full border-collapse">
                 <thead>
                     <tr>
@@ -30,30 +30,40 @@
                         <th class="px-4 py-2 text-left">Author</th>
                         <th class="px-4 py-2 text-left">Description</th>
                         <th class="px-4 py-2 text-left">Borrowing Price</th>
-                        <th class="px-4 py-2 text-left">Action</th>
+                        <th class="px-4 py-2 text-left">Borrow Date & Time</th>
+                        <th class="px-4 py-2 text-left">Return Date & Time</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for book in books %}
+                    {% for transaction in transactions %}
                     <tr>
-                        <td class="border px-4 py-2"><img src="{{ book.cover.url }}" alt="{{ book.title }}"
-                                class="w-32 h-auto"></td>
-                        <td class="border px-4 py-2">{{ book.title }}</td>
-                        <td class="border px-4 py-2">{{ book.author }}</td>
-                        <td class="border px-4 py-2">{{ book.description | truncatewords:5 }}</td>
-                        <td class="border px-4 py-2">${{ book.borrowing_price }}</td>
-                        <td class="border px-4 py-2"><a href=""
-                                class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline">Return</a>
+                        <td class="border px-4 py-2"><img src="{{ transaction.borrowed_book.cover.url }}"
+                                alt="{{ book.title }}" class="w-32 h-auto"></td>
+                        <td class="border px-4 py-2">{{ transaction.borrowed_book.title }}</td>
+                        <td class="border px-4 py-2">{{ transaction.borrowed_book.author }}</td>
+                        <td class="border px-4 py-2">{{ transaction.borrowed_book.description | truncatewords:5 }}</td>
+                        <td class="border px-4 py-2">${{ transaction.borrowed_book.borrowing_price }}</td>
+                        <td class="border px-4 py-2">{{transaction.borrow_timestamp}}</td>
+                        <td class="border px-4 py-2">
+                            {% if transaction.return_timestamp %}
+                            {{transaction.return_timestamp}}
+                            {% else %}
+                            <form method="post" action="{% url 'return_book' transaction.id %}">
+                                {% csrf_token %}
+                                <input type="submit" value="Return"
+                                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline cursor-pointer">
+                            </form>
+                            {% endif %}
                         </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td class="border px-4 py-2" colspan="4">You haven't borrowed any books yet.</td>
+
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <p class="text-center text-xl">You have not borrowed any books yet.</p>
+        {% endif %}
     </div>
 
 

@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
-from books.views import BooksListView
+# from books.views import BooksListView
+
 from transactions.views import TransactionsListView
 
 urlpatterns = [
@@ -9,6 +10,6 @@ urlpatterns = [
     path('logout/', views.UserLogout.as_view(), name='logout'),
     path('profile/update/', views.UserProfileUpdateView.as_view(),
          name='profile_update'),
-    path('profile/', BooksListView.as_view(), name='profile'),
-    path('profile/transactions/', TransactionsListView.as_view(), name='transactions'),
+    path('profile/', TransactionsListView.as_view(), name='profile'),
+    # path('profile/transactions/', TransactionsListView.as_view(), name='transactions'),
 ]

@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView
 from .models import Book
@@ -11,6 +10,12 @@ class BookDetailsView(LoginRequiredMixin, DetailView):
     model = Book
     template_name = 'book_details.html'
 
+    def get_context_data(self, **kwargs):
+        user_account = UserAccount.objects.get(user=self.request.user)
+        context = super().get_context_data(**kwargs)
+        context['user_account'] = user_account
+        return context
+
 
 class BooksListView(LoginRequiredMixin, ListView):
     model = Book
@@ -18,9 +23,8 @@ class BooksListView(LoginRequiredMixin, ListView):
     context_object_name = 'books'
 
     def get_queryset(self):
-        # get the user account because i use custom user model
+        # getting the user account because i've used custom user model
         user_account = UserAccount.objects.get(user=self.request.user)
         book_list = Book.objects.filter(borrowed_by=user_account)
-        print(book_list)
         return book_list
 

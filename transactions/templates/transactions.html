@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-8">
+    <h1 class="text-3xl font-bold mb-4">Transactions</h1>
+    <h4 class="text-xl mb-5">Current Balance: <span class="font-bold">${{ user_account.balance }}</span></h4>
+    <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse border border-gray-300 text-center">
+            <thead>
+                <tr>
+                    <th class="border border-gray-300 px-4 py-2">Borrowed Book</th>
+                    <th class="border border-gray-300 px-4 py-2">Amount</th>
+                    <th class="border border-gray-300 px-4 py-2">Balance After Transaction</th>
+                    <th class="border border-gray-300 px-4 py-2">Borrow Date & Time</th>
+                    <th class="border border-gray-300 px-4 py-2">Return Date & Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td class="border border-gray-300 px-4 py-2">{{ transaction.borrowed_book.title }}</td>
+                    <td class="border border-gray-300 px-4 py-2">${{ transaction.amount }}</td>
+                    <td class="border border-gray-300 px-4 py-2">${{ transaction.balance_after_transaction }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ transaction.borrow_timestamp }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{% if transaction.return_timestamp %}
+                        {{ transaction.return_timestamp }}
+                        {% else %}
+                        <span class="text-red-600 font-bold">Not Returned</span>
+                        {% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

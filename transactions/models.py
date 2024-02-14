@@ -14,7 +14,7 @@ class Transaction(models.Model):
     balance_after_transaction = models.DecimalField(
         max_digits=10, decimal_places=2)
     borrow_timestamp = models.DateTimeField(auto_now_add=True)
-    return_timestamp = models.DateTimeField(auto_now=True)
+    return_timestamp = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.user.username} - {self.amount} - {self.borrow_timestamp}"

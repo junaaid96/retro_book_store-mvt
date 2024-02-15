@@ -100,7 +100,7 @@ WSGI_APPLICATION = 'retro_book_store.wsgi.application'
 
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get('sqlite:///db.sqlite3'))
+    'default': dj_database_url.config(default='sqlite:///db.sqlite3')
 }
 
 

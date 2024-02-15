@@ -6,33 +6,39 @@
 <div class="container mx-auto py-8">
     <h1 class="text-3xl font-bold mb-4">Transactions</h1>
     <h4 class="text-xl mb-5">Current Balance: <span class="font-bold">${{ user_account.balance }}</span></h4>
+    {% if transactions %}
     <div class="overflow-x-auto">
         <table class="min-w-full border-collapse border border-gray-300 text-center">
-            <thead>
+            <thead class="bg-gray-100">
                 <tr>
-                    <th class="border border-gray-300 px-4 py-2">Borrowed Book</th>
+                    <th class="border border-gray-300 px-4 py-2">Date & Time</th>
+                    <th class="border border-gray-300 px-4 py-2">Transaction Type</th>
                     <th class="border border-gray-300 px-4 py-2">Amount</th>
                     <th class="border border-gray-300 px-4 py-2">Balance After Transaction</th>
-                    <th class="border border-gray-300 px-4 py-2">Borrow Date & Time</th>
-                    <th class="border border-gray-300 px-4 py-2">Return Date & Time</th>
                 </tr>
             </thead>
             <tbody>
                 {% for transaction in transactions %}
                 <tr>
-                    <td class="border border-gray-300 px-4 py-2">{{ transaction.borrowed_book.title }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ transaction.timestamp }}</td>
+                    <td class="border border-gray-300 px-4 py-2">
+                        {% if transaction.transaction_type == 'Deposit' %}
+                        <span class="bg-green-600 font-bold text-white px-2 py-1">Deposit</span>
+                        {% elif transaction.transaction_type == 'Return' %}
+                        <span class="bg-blue-600 font-bold text-white px-2 py-1">Return</span>
+                        {% else %}
+                        <span class="bg-red-600 font-bold text-white px-2 py-1">Borrow</span>
+                        {% endif %}
+                    </td>
                     <td class="border border-gray-300 px-4 py-2">${{ transaction.amount }}</td>
                     <td class="border border-gray-300 px-4 py-2">${{ transaction.balance_after_transaction }}</td>
-                    <td class="border border-gray-300 px-4 py-2">{{ transaction.borrow_timestamp }}</td>
-                    <td class="border border-gray-300 px-4 py-2">{% if transaction.return_timestamp %}
-                        {{ transaction.return_timestamp }}
-                        {% else %}
-                        <span class="text-red-600 font-bold">Not Returned</span>
-                        {% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% else %}
+    <p class="text-center font-bold">No transactions yet.</p>
+    {% endif %}
 </div>
 {% endblock %}

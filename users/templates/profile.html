@@ -11,16 +11,20 @@
         <a href="{% url 'profile_update' %}"
             class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 mt-5 rounded focus:outline-none focus:shadow-outline">Update
             Profile</a>
+        
+        <!-- deposit money -->
+        <a href="{% url 'deposit' %}"
+            class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 mt-5 rounded focus:outline-none focus:shadow-outline">Deposit</a>
 
         <!-- transactions -->
-        <a href=""
+        <a href="{% url 'transactions' %}"
             class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 mt-5 rounded focus:outline-none focus:shadow-outline">Transactions</a>
     </div>
 
     <!-- borrowed books list -->
     <div class="p-14 bg-gray-100 rounded-lg shadow-md w-full">
-        <h1 class="text-3xl font-bold text-center mb-8">Borrowing History</h1>
-        {% if transactions %}
+        <h1 class="text-3xl font-bold text-center mb-8">Borrowing Histories</h1>
+        {% if histories %}
         <div class="overflow-x-auto text-center">
             <table class="table-auto w-full border-collapse">
                 <thead>
@@ -35,20 +39,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for transaction in transactions %}
+                    {% for history in histories %}
                     <tr>
-                        <td class="border px-4 py-2"><img src="{{ transaction.borrowed_book.cover.url }}"
-                                alt="{{ book.title }}" class="w-32 h-auto"></td>
-                        <td class="border px-4 py-2">{{ transaction.borrowed_book.title }}</td>
-                        <td class="border px-4 py-2">{{ transaction.borrowed_book.author }}</td>
-                        <td class="border px-4 py-2">{{ transaction.borrowed_book.description | truncatewords:5 }}</td>
-                        <td class="border px-4 py-2">${{ transaction.borrowed_book.borrowing_price }}</td>
-                        <td class="border px-4 py-2">{{transaction.borrow_timestamp}}</td>
+                        <td class="border px-4 py-2"><img src="{{ history.borrowed_book.cover.url }}"
+                                alt="{{ history.borrowed_book.title }}" class="w-32 h-auto"></td>
+                        <td class="border px-4 py-2">{{ history.borrowed_book.title }}</td>
+                        <td class="border px-4 py-2">{{ history.borrowed_book.author }}</td>
+                        <td class="border px-4 py-2">{{ history.borrowed_book.description | truncatewords:5 }}</td>
+                        <td class="border px-4 py-2">${{ history.borrowed_book.borrowing_price }}</td>
+                        <td class="border px-4 py-2">{{history.borrow_timestamp}}</td>
                         <td class="border px-4 py-2">
-                            {% if transaction.return_timestamp %}
-                            {{transaction.return_timestamp}}
+                            {% if history.return_timestamp %}
+                            {{history.return_timestamp}}
                             {% else %}
-                            <form method="post" action="{% url 'return_book' transaction.id %}">
+                            <form method="post" action="{% url 'return_book' history.id %}">
                                 {% csrf_token %}
                                 <input type="submit" value="Return"
                                     class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline cursor-pointer">

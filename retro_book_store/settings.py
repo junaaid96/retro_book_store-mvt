@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'categories',
     'reviews',
     'users',
+    'borrowing_histories',
     'transactions',
 ]
 

@@ -1,8 +1,7 @@
 from django.urls import path
 from . import views
-# from books.views import BooksListView
-
-from transactions.views import TransactionsListView
+from borrowing_histories.views import HistoriesListView
+from transactions.views import TransactionsListView, DepositMoneyView
 
 urlpatterns = [
     path('register/', views.UserRegistrationView.as_view(), name='register'),
@@ -10,6 +9,9 @@ urlpatterns = [
     path('logout/', views.UserLogout.as_view(), name='logout'),
     path('profile/update/', views.UserProfileUpdateView.as_view(),
          name='profile_update'),
-    path('profile/', TransactionsListView.as_view(), name='profile'),
-    # path('profile/transactions/', TransactionsListView.as_view(), name='transactions'),
+
+    path('profile/', HistoriesListView.as_view(), name='profile'),
+    path('profile/transactions/',
+         TransactionsListView.as_view(), name='transactions'),
+    path('profile/deposit/', DepositMoneyView.as_view(), name='deposit'),
 ]

@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView
 from .models import Book
 from users.models import UserAccount
+from borrowing_histories.models import BorrowingHistory
 from transactions.models import Transaction
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
@@ -37,7 +38,7 @@ class BookDetailsView(LoginRequiredMixin, DetailView):
 
 
 class BorrowBookView(LoginRequiredMixin, CreateView):
-    model = Transaction
+    model = BorrowingHistory
     template_name = 'book_details.html'
     fields = []
 
@@ -45,10 +46,13 @@ class BorrowBookView(LoginRequiredMixin, CreateView):
         user_account = UserAccount.objects.get(user=self.request.user)
         book = Book.objects.get(pk=self.kwargs['pk'])
 
-        form.instance.user = user_account
+        if user_account.balance < book.borrowing_price:
+            messages.error(self.request, 'Insufficient balance! Please deposit some money to your account.')
+            return redirect('book_details', pk=book.pk)
+
+        form.instance.borrower = user_account
         form.instance.borrowed_book = book
         form.instance.amount = book.borrowing_price
-        form.instance.balance_after_transaction = user_account.balance - book.borrowing_price
 
         user_account.balance -= book.borrowing_price
         user_account.save()
@@ -56,6 +60,10 @@ class BorrowBookView(LoginRequiredMixin, CreateView):
         book.borrowed_by.add(user_account)
         book.total_copies -= 1
         book.save()
+
+        transaction = Transaction.objects.create(
+            user=user_account, transaction_type='Borrow', amount=book.borrowing_price, balance_after_transaction=user_account.balance)
+        transaction.save()
 
         return super().form_valid(form)
 
@@ -65,17 +73,21 @@ class BorrowBookView(LoginRequiredMixin, CreateView):
 
 
 class ReturnBookView(LoginRequiredMixin, View):
-    def post(self, request, transaction_id):
+    def post(self, request, history_id):
         user_account = UserAccount.objects.get(user=request.user)
-        transaction = get_object_or_404(Transaction, id=transaction_id)
-        book = transaction.borrowed_book
+        history = get_object_or_404(BorrowingHistory, id=history_id)
+        book = history.borrowed_book
 
-        transaction.return_timestamp = timezone.now()
-        transaction.save()
+        history.return_timestamp = timezone.now()
+        history.save()
 
         book.borrowed_by.remove(user_account)
         book.total_copies += 1
         book.save()
+
+        transaction = Transaction.objects.create(
+            user=user_account, transaction_type='Return', amount=0, balance_after_transaction=user_account.balance)
+        transaction.save()
 
         messages.success(request, 'Book returned successfully!')
         return redirect('profile')

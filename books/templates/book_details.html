@@ -1,25 +1,31 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} 
 {% load static %}
-
+{% block title %}{{ book.title }}{% endblock %}
 {% block content %}
 <div class="mx-auto py-8">
     <div class="max-w-4xl mx-auto">
         <div class="bg-white p-8 rounded-lg shadow-md">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div>
-                    <img src="{{ book.cover.url }}" alt="{{ book.title }}" class="w-full h-auto mb-4">
+                    <img src="{{ book.cover.url }}" alt="{{ book.title }}" class="w-full h-auto mb-4" />
                 </div>
                 <div>
                     <h1 class="text-3xl font-bold mb-4">{{ book.title }}</h1>
-                    <h2 class="text-xl text-gray-700 mb-4">{{ book.author }}</h2>
+                    <h2 class="text-xl text-gray-700 mb-4">
+                        {{ book.author }}
+                    </h2>
                     <p class="mb-4">{{ book.description }}</p>
-                    <p class="text-gray-700 mb-4">Borrowing Price: ${{ book.borrowing_price }}</p>
-                    <p class="text-gray-700 mb-4">Category:
-                        {% for category in book.category.all %}
+                    <p class="text-gray-700 mb-4">
+                        Borrowing Price: ${{ book.borrowing_price }}
+                    </p>
+                    <p class="text-gray-700 mb-4">
+                        Category: {% for category in book.category.all %}
                         <span class="bg-yellow-300 text-black rounded-lg py-1 px-2">{{ category.name }}</span>
                         {% endfor %}
                     </p>
-                    <p class="text-gray-700 mb-4">Available Copies: {{ book.total_copies }}</p>
+                    <p class="text-gray-700 mb-4">
+                        Available Copies: {{ book.total_copies }}
+                    </p>
                     {% if user_account in book.borrowed_by.all %}
                     <button class="font-bold py-2 px-4 rounded w-full bg-gray-200 cursor-not-allowed" disabled>
                         Already Borrowed
@@ -32,12 +38,50 @@
                     <form method="post" action="{% url 'borrow_book' book.id %}">
                         {% csrf_token %}
                         <input type="submit" value="Borrow"
-                            class="font-bold py-2 px-4 rounded w-full bg-yellow-800 text-white hover:bg-yellow-900 cursor-pointer">
+                            class="font-bold py-2 px-4 rounded w-full bg-yellow-800 text-white hover:bg-yellow-900 cursor-pointer" />
                     </form>
                     {% endif %}
-
                 </div>
             </div>
+        </div>
+    </div>
+    <!-- Review Section -->
+    <div class="mx-auto mt-4 w-1/2">
+        <h2 class="text-2xl font-bold mb-4">Reviews</h2>
+        <h4 class="text-xl mb-4">Total Reviews: {{ reviews | length }}</h4>
+
+        {% if user_account in book.borrowed_by.all %}
+        <form method="post">
+            {% csrf_token %}
+            <div>
+                <label for="id_text" class="block text-sm font-semibold mb-1">Your Review:</label>
+                <textarea id="id_text" name="text" class="w-full bg-gray-100 border border-gray-300 rounded p-2"
+                    rows="4"></textarea>
+            </div>
+            <button type="submit" class="bg-yellow-800 hover:bg-yellow-900 text-white font-bold py-2 px-4 rounded">
+                Submit Review
+            </button>
+        </form>
+        {% else %}
+        <p class="text-gray-600">You need to borrow this book to submit a review.</p>
+        {% endif %}
+
+        <div class="mt-3 flex flex-col gap-3">
+            {% for review in reviews %}
+            <div class="border rounded-lg p-4 shadow-md">
+                <div>
+                    <p class="font-semibold">
+                        {{ review.reviewer.user.first_name }} {{review.reviewer.user.last_name }}
+                    </p>
+                    <p class="text-gray-600 text-sm">
+                        {{ review.created_at }}
+                    </p>
+                </div>
+                <div class="mt-2">
+                    <p>{{ review.text }}</p>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

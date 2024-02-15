@@ -29,7 +29,6 @@ urlpatterns = [
          views.filter_by_category, name='filter_by_category'),
     path('books/', include('books.urls')),
     path('users/', include('users.urls')),
-    # path('transactions/', include('transactions.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

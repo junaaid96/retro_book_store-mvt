@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView
 from .models import Book
+from reviews.forms import ReviewForm
 from users.models import UserAccount
 from borrowing_histories.models import BorrowingHistory
 from transactions.models import Transaction
@@ -18,23 +19,32 @@ class BookDetailsView(LoginRequiredMixin, DetailView):
     model = Book
     template_name = 'book_details.html'
 
+    def post(self, request, pk):
+        user_account = UserAccount.objects.get(user=self.request.user)
+        book = Book.objects.get(pk=pk)
+        review_form = ReviewForm(request.POST)
+
+        if review_form.is_valid():
+            review = review_form.save(commit=False)
+            review.reviewer = user_account
+            review.borrowed_book = book
+            review.save()
+
+            messages.success(request, 'Review added successfully!')
+            return redirect('book_details', pk=book.pk)
+        else:
+            messages.error(request, 'Invalid review!')
+            return redirect('book_details', pk=book.pk)
+
     def get_context_data(self, **kwargs):
         user_account = UserAccount.objects.get(user=self.request.user)
         context = super().get_context_data(**kwargs)
+        book = Book.objects.get(pk=self.kwargs['pk'])
+        reviews = book.reviews.all()
         context['user_account'] = user_account
+        context['review_form'] = ReviewForm()
+        context['reviews'] = reviews
         return context
-
-
-# class BooksListView(LoginRequiredMixin, ListView):
-#     model = Book
-#     template_name = 'profile.html'
-#     context_object_name = 'books'
-
-#     def get_queryset(self):
-#         # getting the user account because i've used custom user model
-#         user_account = UserAccount.objects.get(user=self.request.user)
-#         book_list = Book.objects.filter(borrowed_by=user_account)
-#         return book_list
 
 
 class BorrowBookView(LoginRequiredMixin, CreateView):
@@ -47,7 +57,12 @@ class BorrowBookView(LoginRequiredMixin, CreateView):
         book = Book.objects.get(pk=self.kwargs['pk'])
 
         if user_account.balance < book.borrowing_price:
-            messages.error(self.request, 'Insufficient balance! Please deposit some money to your account.')
+            messages.error(
+                self.request, 'Insufficient balance! Please deposit some money to your account.')
+            return redirect('book_details', pk=book.pk)
+
+        if book.total_copies == 0:
+            messages.error(self.request, 'No available copies of this book!')
             return redirect('book_details', pk=book.pk)
 
         form.instance.borrower = user_account

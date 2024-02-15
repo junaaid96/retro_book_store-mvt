@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+
 {% load static %}
+
 {% block title %}User Registration{% endblock %}
 
 {% block content %}
-
 <div class="flex flex-col gap-5 items-center justify-center min-h-screen">
     <!-- error messages -->
     {% if form.non_field_errors %} {% for error in form.non_field_errors %}
@@ -163,6 +164,4 @@
         </form>
     </div>
 </div>
-
-
 {% endblock %}

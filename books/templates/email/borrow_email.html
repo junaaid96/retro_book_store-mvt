@@ -1,0 +1,13 @@
+{% load humanize %}
+
+<p>Hello <strong>{{user.first_name}} {{user.last_name}}</strong>,</p>
+
+<p>
+    You have successfully borrowed <strong>{{borrowed_book.title}}</strong> by <strong>{{borrowed_book.author}}</strong> at the price of <strong>${{borrowed_book.borrowing_price|floatformat:2|intcomma}}</strong>.
+</p>
+
+<p>
+    Your new balance is <strong>${{user.account.balance|floatformat:2|intcomma}}</strong>.
+</p>
+
+<p>Thank you for using our service.<br /><strong>RetroBookStore</strong></p>

@@ -5,8 +5,19 @@ from users.models import UserAccount
 from .forms import DepositMoneyForm
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
-# Create your views here.
+
+def send_transaction_email(user, borrowed_book, email, amount, mail_subject, html_template):
+    message = render_to_string(html_template, {
+        'user': user,
+        'amount': amount,
+        'borrowed_book': borrowed_book
+    })
+    send_email = EmailMultiAlternatives(mail_subject, '', to=[email])
+    send_email.attach_alternative(message, "text/html")
+    send_email.send()
 
 
 class DepositMoneyView(LoginRequiredMixin, CreateView):
@@ -33,6 +44,10 @@ class DepositMoneyView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         messages.success(self.request, 'Money deposited successfully')
+
+        send_transaction_email(self.request.user, None, self.request.user.email,
+                               self.object.amount, 'Money Deposited', 'email/deposit_email.html')
+
         return reverse_lazy('transactions')
 
 

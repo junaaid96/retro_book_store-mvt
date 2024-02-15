@@ -11,6 +11,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.utils import timezone
 from django.views import View
+from transactions.views import send_transaction_email
 
 # Create your views here.
 
@@ -84,6 +85,8 @@ class BorrowBookView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         messages.success(self.request, 'Book borrowed successfully!')
+        send_transaction_email(self.request.user, self.object.borrowed_book, self.request.user.email,
+                               self.object.amount, 'Book Borrowed', 'email/borrow_email.html')
         return reverse_lazy('profile')
 
 
@@ -105,4 +108,6 @@ class ReturnBookView(LoginRequiredMixin, View):
         transaction.save()
 
         messages.success(request, 'Book returned successfully!')
+        send_transaction_email(request.user, history.borrowed_book, request.user.email,
+                               0, 'Book Returned', 'email/return_email.html')
         return redirect('profile')

@@ -1,0 +1,14 @@
+{% load humanize %}
+
+<p>Hello <strong>{{user.first_name}} {{user.last_name}}</strong>,</p>
+
+<p>
+    You have successfully deposited <strong>${{amount|floatformat:2|intcomma}}</strong> to your account.
+</p>
+
+<p>
+    Your new balance is <strong>${{user.account.balance|floatformat:2|intcomma}}</strong>. Don't forget to check out our
+    latest books and deals.
+</p>
+
+<p>Thank you for using our service.<br /><strong>RetroBookStore</strong></p>

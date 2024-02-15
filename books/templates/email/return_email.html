@@ -1,0 +1,10 @@
+{% load humanize %}
+
+<p>Hello <strong>{{user.first_name}} {{user.last_name}}</strong>,</p>
+
+<p>
+    Thank You. You have successfully returned <strong>{{borrowed_book.title}}</strong> by
+    <strong>{{borrowed_book.author}}</strong>.
+</p>
+
+<p>Thank you for using our service.<br /><strong>RetroBookStore</strong></p>

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView
@@ -96,6 +97,11 @@ class ReturnBookView(LoginRequiredMixin, View):
         history = get_object_or_404(BorrowingHistory, id=history_id)
         book = history.borrowed_book
 
+        returned_amount = book.borrowing_price * Decimal(0.5)
+
+        user_account.balance += returned_amount
+        user_account.save()
+
         history.return_timestamp = timezone.now()
         history.save()
 
@@ -104,7 +110,7 @@ class ReturnBookView(LoginRequiredMixin, View):
         book.save()
 
         transaction = Transaction.objects.create(
-            user=user_account, transaction_type='Return', amount=0, balance_after_transaction=user_account.balance)
+            user=user_account, transaction_type='Return', amount=returned_amount, balance_after_transaction=user_account.balance)
         transaction.save()
 
         messages.success(request, 'Book returned successfully!')

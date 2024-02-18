@@ -115,5 +115,5 @@ class ReturnBookView(LoginRequiredMixin, View):
 
         messages.success(request, 'Book returned successfully!')
         send_transaction_email(request.user, history.borrowed_book, request.user.email,
-                               0, 'Book Returned', 'email/return_email.html')
+                               returned_amount, 'Book Returned', 'email/return_email.html')
         return redirect('profile')

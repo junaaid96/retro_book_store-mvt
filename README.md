@@ -26,4 +26,4 @@ This project implements a system for managing books and user accounts. It allows
 
 ## Technologies Used
 
-- HTML, CSS, Python, Django, SQLite based on default MVT pattern.
+- HTML, CSS, Tailwind CSS, Python, Django, SQLite based on default MVT pattern.

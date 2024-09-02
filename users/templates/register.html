@@ -17,8 +17,8 @@
     {% endfor %} {% endif %}
 
     <!-- form -->
-    <div class="lg:w-1/2 p-14 bg-gray-100 rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold text-center mb-8">Registration</h1>
+    <div class="lg:w-1/2 m-auto bg-gray-100 rounded-lg shadow-md p-8 my-10">
+        <h1 class="text-3xl font-bold text-center mb-6">Registration</h1>
         <form method="post" class="space-y-4" novalidate>
             {% csrf_token %}
 
@@ -42,7 +42,7 @@
                 {% endif %}
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid lg:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-gray-700 font-bold mb-2" for="{{ form.first_name.id_for_label }}">
                         {{ form.first_name.label }}
@@ -75,7 +75,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid lg:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-gray-700 font-bold mb-2" for="{{ form.email.id_for_label }}">
                         {{ form.email.label }}
@@ -102,7 +102,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid lg:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-gray-700 font-bold mb-2" for="{{ form.password1.id_for_label }}">
                         {{ form.password1.label }}

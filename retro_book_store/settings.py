@@ -78,13 +78,11 @@ WSGI_APPLICATION = "retro_book_store.wsgi.application"
 
 # Database: Neon serverless Postgres in every environment. The app relies on
 # Postgres full-text search and pg_trgm, so SQLite is not supported.
+DATABASE_URL = env("DATABASE_URL", default="postgres://retro:retro@localhost:5432/retro" if DEBUG else "")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL must be set when DEBUG is off (use the Neon pooled connection string).")
 DATABASES = {
-    "default": dj_database_url.config(
-        env="DATABASE_URL",
-        default="postgres://retro:retro@localhost:5432/retro",
-        conn_max_age=60,
-        conn_health_checks=True,
-    )
+    "default": dj_database_url.parse(DATABASE_URL, conn_max_age=60, conn_health_checks=True)
 }
 
 AUTH_PASSWORD_VALIDATORS = [

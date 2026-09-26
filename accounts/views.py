@@ -6,7 +6,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Avg, Count, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.http import Http404
@@ -42,11 +42,18 @@ def register(request):
         return redirect("dashboard")
     form = RegisterForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
-        with transaction.atomic():
-            user = form.save()
-        login(request, user)
-        messages.success(request, f"Welcome to RetroBookStore, {user.first_name}! Top up your wallet to borrow your first book.")
-        return redirect("dashboard")
+        try:
+            with transaction.atomic():
+                user = form.save()
+        except IntegrityError as error:
+            constraint = getattr(getattr(error.__cause__, "diag", None), "constraint_name", None)
+            if constraint != "auth_user_username_key":
+                raise
+            form.add_error("username", "That username is already in use. Please choose another.")
+        else:
+            login(request, user)
+            messages.success(request, f"Welcome to RetroBookStore, {user.first_name}! Top up your wallet to borrow your first book.")
+            return redirect("dashboard")
     return render(request, "accounts/register.html", {"form": form})
 
 

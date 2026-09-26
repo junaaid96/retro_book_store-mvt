@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{% if q %}“{{ q }}” · {% endif %}Browse · RetroBookStore{% endblock %}
+
+{% block content %}
+<div class="container-page py-10" x-data="{ filters: false }">
+  <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="label-mono">The catalogue</p>
+      <h1 class="font-display text-4xl font-bold">{% if q %}Results for “{{ q }}”{% else %}Browse the stacks{% endif %}</h1>
+    </div>
+    <button type="button" class="btn-outline btn-sm lg:hidden" @click="filters = !filters" :aria-expanded="filters">⚙️ Filters</button>
+  </div>
+
+  <form id="filters" action="{% url 'browse' %}" class="grid gap-8 lg:grid-cols-[260px_1fr]"
+        hx-get="{% url 'browse' %}" hx-target="#results" hx-trigger="change, input from:#f-q delay:350ms" hx-push-url="true" hx-indicator="#results">
+    <aside class="space-y-7 lg:block" :class="filters ? 'block' : 'hidden'">
+      <div class="form-field">
+        <label for="f-q">Keywords</label>
+        <input id="f-q" name="q" type="search" value="{{ q }}" placeholder="Title, author, vibe…">
+      </div>
+
+      <div class="form-field">
+        <label for="f-sort">Sort by</label>
+        <select id="f-sort" name="sort">
+          {% for key, label in sorts.items %}<option value="{{ key }}" {% if key == sort %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <fieldset>
+        <legend class="mb-2 text-sm font-semibold text-ink-soft">Quick filters</legend>
+        <div class="flex flex-wrap gap-2">
+          <label class="chip"><input type="checkbox" name="available" value="1" class="sr-only" {% if request.GET.available %}checked{% endif %}>✅ Available now</label>
+          <label class="chip"><input type="checkbox" name="short" value="1" class="sr-only" {% if request.GET.short %}checked{% endif %}>⚡ Under 250 pages</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend class="mb-2 text-sm font-semibold text-ink-soft">Genre</legend>
+        <div class="flex flex-wrap gap-2">
+          {% for g in genres %}
+            <label class="chip text-xs"><input type="checkbox" name="genre" value="{{ g.slug }}" class="sr-only" {% if g.slug in selected_genres %}checked{% endif %}>{{ g.emoji }} {{ g.name }}</label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend class="mb-2 text-sm font-semibold text-ink-soft">Mood <span class="font-normal text-muted">(all must match)</span></legend>
+        <div class="flex flex-wrap gap-2">
+          {% for m in moods %}
+            <label class="chip text-xs"><input type="checkbox" name="mood" value="{{ m.slug }}" class="sr-only" {% if m.slug in selected_moods %}checked{% endif %}>{{ m.emoji }} {{ m.name }}</label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend class="mb-2 text-sm font-semibold text-ink-soft">Pace</legend>
+        <div class="flex flex-wrap gap-2">
+          <label class="chip text-xs"><input type="radio" name="pace" value="" class="sr-only" {% if not selected_pace %}checked{% endif %}>Any</label>
+          {% for value, label in paces %}
+            <label class="chip text-xs"><input type="radio" name="pace" value="{{ value }}" class="sr-only" {% if value == selected_pace %}checked{% endif %}>{{ label }}</label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <div class="flex gap-2">
+        <noscript><button class="btn-dark btn-sm">Apply</button></noscript>
+        <a href="{% url 'browse' %}" class="btn-ghost btn-sm">Reset all</a>
+      </div>
+    </aside>
+
+    <section id="results" aria-live="polite">
+      {% include "catalog/partials/results.html" %}
+    </section>
+  </form>
+</div>
+{% endblock %}

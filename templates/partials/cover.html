@@ -1,0 +1,7 @@
+<div class="cover {{ extra }}" style="--c1: {{ book.palette.0 }}; --c2: {{ book.palette.1 }}">
+  <div class="cover-fallback" aria-hidden="true">
+    <span class="cf-title">{{ book.title }}</span>
+    <span><span class="cf-rule block mb-2"></span><span class="cf-author">{{ book.author.name }}</span></span>
+  </div>
+  {% if book.cover_src %}<img data-cover src="{{ book.cover_src }}" alt="Cover of {{ book.title }}" loading="lazy" decoding="async" class="absolute inset-0 h-full w-full object-cover">{% endif %}
+</div>

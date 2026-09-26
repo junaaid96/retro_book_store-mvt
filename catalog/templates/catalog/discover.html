@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Find a book by mood · RetroBookStore{% endblock %}
+
+{% block content %}
+<section class="border-b border-line bg-paper-2/50">
+  <div class="container-page py-14 text-center">
+    <p class="label-mono">Mood-based discovery</p>
+    <h1 class="mx-auto mt-2 max-w-3xl font-display text-4xl font-bold sm:text-5xl">How do you want to <span class="italic text-accent">feel</span> tonight?</h1>
+    <p class="mx-auto mt-4 max-w-xl text-ink-soft">Pick one or more moods and a pace. We'll pull the books that match best — ranked by how many of your moods they hit.</p>
+
+    <form action="{% url 'discover' %}" class="mx-auto mt-10 max-w-4xl space-y-6"
+          hx-get="{% url 'discover' %}" hx-target="#mood-results" hx-trigger="change" hx-push-url="true">
+      <div class="flex flex-wrap justify-center gap-2.5">
+        {% for m in moods %}
+          <label class="chip !px-4 !py-2 text-base"><input type="checkbox" name="mood" value="{{ m.slug }}" class="sr-only" {% if m.slug in selected %}checked{% endif %}><span aria-hidden="true">{{ m.emoji }}</span> {{ m.name }}</label>
+        {% endfor %}
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <span class="text-sm text-muted mr-1">Pace:</span>
+        <label class="chip text-sm"><input type="radio" name="pace" value="" class="sr-only" {% if not pace %}checked{% endif %}>Any</label>
+        {% for value, label in paces %}
+          <label class="chip text-sm"><input type="radio" name="pace" value="{{ value }}" class="sr-only" {% if value == pace %}checked{% endif %}>{{ label }}</label>
+        {% endfor %}
+      </div>
+      <noscript><button class="btn-primary">Show me books</button></noscript>
+    </form>
+  </div>
+</section>
+
+<div id="mood-results" class="container-page py-12" aria-live="polite">
+  {% include "catalog/partials/discover_results.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-page grid min-h-[calc(100vh-4rem)] items-center gap-12 py-12 lg:grid-cols-2">
+  <div class="hidden lg:block">
+    <p class="label-mono">Library card</p>
+    <div class="card mt-4 max-w-md rotate-[-2deg] p-8 font-mono text-sm">
+      <div class="flex items-center justify-between border-b-2 border-dashed border-line pb-4">
+        <span class="font-display text-2xl font-bold not-italic">RetroBookStore</span>
+        <span class="stamp text-accent">Member</span>
+      </div>
+      <dl class="mt-5 space-y-3">
+        <div class="flex justify-between"><dt class="text-muted">Loan period</dt><dd>{{ LIBRARY.LOAN_DAYS }} days</dd></div>
+        <div class="flex justify-between"><dt class="text-muted">Books at once</dt><dd>up to {{ LIBRARY.MAX_ACTIVE_LOANS }}</dd></div>
+        <div class="flex justify-between"><dt class="text-muted">Refund on return</dt><dd>{{ REFUND_PERCENT }}%</dd></div>
+        <div class="flex justify-between"><dt class="text-muted">Waitlist hold</dt><dd>{{ LIBRARY.HOLD_PICKUP_HOURS }} hours</dd></div>
+      </dl>
+      <div class="mt-6 grid grid-cols-6 gap-1" aria-hidden="true">
+        {% for i in "123456789012345678" %}<div class="h-6 rounded-sm border border-line"></div>{% endfor %}
+      </div>
+    </div>
+    <p class="mt-10 max-w-md font-display text-3xl font-semibold leading-snug">“A library is not a luxury but one of the necessities of life.”</p>
+    <p class="mt-2 text-muted">— Henry Ward Beecher</p>
+  </div>
+  <div class="mx-auto w-full max-w-md">
+    {% block form %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

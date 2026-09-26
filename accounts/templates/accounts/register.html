@@ -1,0 +1,31 @@
+{% extends "accounts/auth_base.html" %}
+{% block title %}Join · RetroBookStore{% endblock %}
+{% block form %}
+<div class="card-pad sm:!p-10">
+  <h1 class="font-display text-3xl font-bold">Get your library card</h1>
+  <p class="mt-1 text-ink-soft">Free forever. Takes 30 seconds.</p>
+  <form method="post" class="mt-8 space-y-5">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="rounded-xl bg-danger/10 p-3 text-sm text-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="form-field">{{ form.first_name.as_field_group }}</div>
+      <div class="form-field">{{ form.last_name.as_field_group }}</div>
+    </div>
+    <div class="form-field">{{ form.username.as_field_group }}</div>
+    <div class="form-field">{{ form.email.as_field_group }}</div>
+    <div class="form-field">{{ form.password1.as_field_group }}</div>
+    <div class="form-field">{{ form.password2.as_field_group }}</div>
+    <fieldset>
+      <legend class="mb-2 text-sm font-semibold text-ink-soft">Favourite genres <span class="font-normal text-muted">(optional)</span></legend>
+      <div class="flex flex-wrap gap-2">
+        {% for choice in form.favorite_genres %}
+          <label class="chip text-xs">{{ choice.tag }}<span>{{ choice.choice_label }}</span></label>
+        {% endfor %}
+      </div>
+      <p class="mt-1 text-xs text-muted">{{ form.favorite_genres.help_text }}</p>
+    </fieldset>
+    <button class="btn-primary btn-lg w-full">Create my account</button>
+  </form>
+  <p class="mt-6 text-center text-sm text-muted">Already a member? <a href="{% url 'login' %}" class="link font-semibold text-ink">Log in</a></p>
+</div>
+{% endblock %}

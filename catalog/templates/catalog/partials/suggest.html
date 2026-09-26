@@ -1,0 +1,24 @@
+{% load retro %}
+{% if q|length >= 2 %}
+<div class="card overflow-hidden text-sm">
+  {% if books or authors %}
+    <ul class="divide-y divide-line">
+      {% for book in books %}
+        <li><a href="{{ book.get_absolute_url }}" class="flex items-center gap-3 px-3 py-2.5 hover:bg-paper-2">
+          <span class="w-9 shrink-0">{% cover book %}</span>
+          <span class="min-w-0"><span class="block font-medium truncate">{{ book.title }}</span><span class="block text-xs text-muted truncate">{{ book.author.name }}</span></span>
+        </a></li>
+      {% endfor %}
+      {% for author in authors %}
+        <li><a href="{{ author.get_absolute_url }}" class="flex items-center gap-3 px-3 py-2.5 hover:bg-paper-2">
+          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-paper-2">✍️</span>
+          <span><span class="block font-medium">{{ author.name }}</span><span class="block text-xs text-muted">Author</span></span>
+        </a></li>
+      {% endfor %}
+    </ul>
+    <a href="{% url 'browse' %}?q={{ q|urlencode }}" class="block border-t border-line px-3 py-2.5 text-center font-medium text-accent hover:bg-paper-2">See all results for “{{ q }}” →</a>
+  {% else %}
+    <p class="px-4 py-6 text-center text-muted">No matches for “{{ q }}”. Try a mood like <a class="link" href="{% url 'discover' %}?mood=funny">funny</a> instead?</p>
+  {% endif %}
+</div>
+{% endif %}

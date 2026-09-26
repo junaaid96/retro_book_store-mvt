@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load retro static %}
+{% block title %}Staff dashboard · RetroBookStore{% endblock %}
+
+{% block content %}
+<div class="container-page py-10 space-y-8">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div><p class="label-mono">Staff</p><h1 class="font-display text-4xl font-bold">Library at a glance</h1></div>
+    <a href="{% url 'admin:index' %}" class="btn-outline btn-sm">Open admin →</a>
+  </header>
+
+  <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="card-pad"><p class="label-mono">Titles / copies</p><p class="font-display text-3xl font-bold">{{ kpis.titles }} <span class="text-lg text-muted">/ {{ kpis.copies }}</span></p></div>
+    <div class="card-pad"><p class="label-mono">On loan</p><p class="font-display text-3xl font-bold">{{ kpis.on_loan }}</p><p class="text-xs text-muted">{{ kpis.on_loan|percent:kpis.copies }}% utilisation</p></div>
+    <div class="card-pad {% if kpis.overdue %}!border-danger{% endif %}"><p class="label-mono">Overdue</p><p class="font-display text-3xl font-bold {% if kpis.overdue %}text-danger{% endif %}">{{ kpis.overdue }}</p></div>
+    <div class="card-pad"><p class="label-mono">Members / waitlist</p><p class="font-display text-3xl font-bold">{{ kpis.members }} <span class="text-lg text-muted">/ {{ kpis.waitlist }}</span></p></div>
+  </section>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <section class="card-pad lg:col-span-2">
+      <div class="flex items-baseline justify-between"><h2 class="font-display text-xl font-semibold">Loans, last 30 days</h2><p class="text-sm text-muted">Net fee revenue <span class="font-mono text-ink">{{ kpis.revenue|money }}</span></p></div>
+      <div class="mt-4 h-64"><canvas id="loanChart" aria-label="Loans per day for the last 30 days" role="img"></canvas></div>
+    </section>
+    <section class="card-pad">
+      <h2 class="font-display text-xl font-semibold">Buy more copies?</h2>
+      <p class="text-xs text-muted">Titles with the longest waitlists per copy</p>
+      <ul class="mt-4 space-y-3 text-sm">
+        {% for b in demand %}
+          <li class="flex items-center justify-between gap-3"><a href="{{ b.get_absolute_url }}" class="truncate hover:text-accent">{{ b.title }}</a><span class="pill-warn shrink-0">{{ b.waiting }} waiting · {{ b.total_copies }} cop{{ b.total_copies|pluralize:"y,ies" }}</span></li>
+        {% empty %}<li class="text-muted">No waitlists right now 🎉</li>{% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <section class="card overflow-hidden">
+      <h2 class="border-b border-line p-5 font-display text-xl font-semibold">Overdue loans</h2>
+      <table class="w-full text-sm"><tbody class="divide-y divide-line">
+        {% for loan in overdue %}
+          <tr><td class="px-5 py-3">{{ loan.book.title }}</td><td class="px-5 py-3 text-muted">{{ loan.user.username }}</td><td class="px-5 py-3 text-right"><span class="pill-bad">{{ loan.days_late }}d late</span></td></tr>
+        {% empty %}<tr><td class="px-5 py-8 text-center text-muted">Nothing overdue. ✨</td></tr>{% endfor %}
+      </tbody></table>
+    </section>
+    <section class="card overflow-hidden">
+      <h2 class="border-b border-line p-5 font-display text-xl font-semibold">Most borrowed</h2>
+      <table class="w-full text-sm"><tbody class="divide-y divide-line">
+        {% for b in popular %}
+          <tr><td class="px-5 py-3 font-mono text-muted">{{ forloop.counter }}</td><td class="px-5 py-3"><a href="{{ b.get_absolute_url }}" class="hover:text-accent">{{ b.title }}</a></td><td class="px-5 py-3 text-right">{{ b.times_borrowed }} loans</td><td class="px-5 py-3 text-right">{% if b.avg_rating %}★ {{ b.avg_rating|floatformat:1 }}{% endif %}</td></tr>
+        {% endfor %}
+      </tbody></table>
+    </section>
+  </div>
+</div>
+{{ chart|json_script:"chart-data" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/vendor/chart.umd.min.js' %}"></script>
+<script>
+  (function () {
+    const data = JSON.parse(document.getElementById("chart-data").textContent);
+    const css = getComputedStyle(document.documentElement);
+    new Chart(document.getElementById("loanChart"), {
+      type: "bar",
+      data: { labels: data.labels, datasets: [{ label: "Loans", data: data.values, backgroundColor: css.getPropertyValue("--accent").trim(), borderRadius: 6 }] },
+      options: {
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: css.getPropertyValue("--muted").trim(), maxRotation: 0, autoSkipPadding: 12 } },
+          y: { beginAtZero: true, ticks: { precision: 0, color: css.getPropertyValue("--muted").trim() }, grid: { color: css.getPropertyValue("--line").trim() } },
+        },
+      },
+    });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load retro humanize %}
+
+{% block content %}
+<!-- Hero -->
+<section class="relative overflow-hidden border-b border-line">
+  <div class="container-page grid items-center gap-12 py-14 lg:grid-cols-12 lg:py-20">
+    <div class="lg:col-span-6 animate-rise">
+      <p class="label-mono mb-4">Est. 2024 · Neighbourhood lending library</p>
+      <h1 class="font-display text-5xl font-bold leading-[1.02] sm:text-6xl lg:text-7xl">
+        Borrow stories,<br><span class="italic text-accent">not shelves.</span>
+      </h1>
+      <p class="mt-6 max-w-lg text-lg text-ink-soft">
+        Pick a book by how you want to <em>feel</em>, take a blind date with a mystery read, join a waitlist that saves your copy, and get your year in books wrapped up in December.
+      </p>
+
+      <form action="{% url 'browse' %}" class="mt-8 flex max-w-lg gap-2" role="search">
+        <label for="hero-q" class="sr-only">Search</label>
+        <input id="hero-q" name="q" class="input !rounded-full !py-3.5 !px-5 text-base" placeholder="What do you feel like reading?">
+        <button class="btn-primary btn-lg shrink-0">Search</button>
+      </form>
+
+      <div class="mt-6 flex flex-wrap items-center gap-2">
+        <span class="text-sm text-muted mr-1">I'm in the mood for</span>
+        {% for mood in moods|slice:":6" %}
+          <a href="{% url 'discover' %}?mood={{ mood.slug }}" class="chip !py-1 text-xs">{{ mood.emoji }} {{ mood.name|lower }}</a>
+        {% endfor %}
+      </div>
+
+      <dl class="mt-10 flex gap-8 sm:gap-12">
+        <div><dt class="label-mono">Books</dt><dd class="font-display text-3xl font-bold">{{ stats.books|intcomma }}</dd></div>
+        <div><dt class="label-mono">Readers</dt><dd class="font-display text-3xl font-bold">{{ stats.readers|intcomma }}</dd></div>
+        <div><dt class="label-mono">Loans</dt><dd class="font-display text-3xl font-bold">{{ stats.loans|intcomma }}</dd></div>
+      </dl>
+    </div>
+
+    <!-- Fanned stack of covers -->
+    <div class="relative hidden h-[460px] lg:col-span-6 lg:block" aria-hidden="true">
+      {% for book in featured|slice:":5" %}
+        <a href="{{ book.get_absolute_url }}" tabindex="-1"
+           class="absolute top-1/2 w-44 transition duration-300 hover:z-20 hover:-translate-y-[58%] hover:rotate-0
+           {% cycle 'left-[4%] -translate-y-[45%] -rotate-12 z-0' 'left-[20%] -translate-y-[52%] -rotate-6 z-10' 'left-[37%] -translate-y-1/2 rotate-0 z-[11] w-52' 'left-[56%] -translate-y-[52%] rotate-6 z-10' 'left-[72%] -translate-y-[45%] rotate-12 z-0' %}">
+          {% cover book %}
+        </a>
+      {% endfor %}
+      <div class="absolute -bottom-2 left-1/2 h-8 w-[85%] -translate-x-1/2 rounded-[50%] bg-ink/10 blur-xl"></div>
+    </div>
+  </div>
+</section>
+
+<div class="container-page space-y-20 py-16">
+
+  {% if for_you %}
+  <section aria-labelledby="for-you">
+    <div class="mb-6 flex items-end justify-between gap-4">
+      <div>
+        <p class="label-mono">Picked from your taste</p>
+        <h2 id="for-you" class="section-title">For you, {{ user.first_name|default:user.username }}</h2>
+      </div>
+      <a href="{% url 'discover' %}" class="link text-sm shrink-0">Tune by mood →</a>
+    </div>
+    <div class="shelf-row">{% for book in for_you %}{% book_card book compact=True %}{% endfor %}</div>
+  </section>
+  {% endif %}
+
+  <!-- Blind date promo -->
+  <section class="card relative overflow-hidden">
+    <div class="grid items-center gap-8 p-8 sm:p-12 md:grid-cols-2">
+      <div>
+        <p class="label-mono">New · Blind Date with a Book</p>
+        <h2 class="section-title mt-2">Don't judge a book by its cover. <span class="text-accent">Don't even see it.</span></h2>
+        <p class="mt-4 text-ink-soft">We wrap a book in paper and give you three spoiler-free hints. Borrow it for {{ BLIND_DISCOUNT }}% off, then unwrap your match. Rate the chemistry when you're done.</p>
+        <a href="{% url 'blind_date' %}" class="btn-primary btn-lg mt-6">Meet your match 💌</a>
+      </div>
+      <div class="flex justify-center gap-4" aria-hidden="true">
+        <div class="wrap-paper wrap-rose h-48 w-32 -rotate-6 rounded-md shadow-xl"></div>
+        <div class="wrap-paper wrap-mint h-56 w-36 rounded-md shadow-xl"></div>
+        <div class="wrap-paper wrap-sky h-48 w-32 rotate-6 rounded-md shadow-xl"></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="trending">
+    <div class="mb-6 flex items-end justify-between gap-4">
+      <div><p class="label-mono">Last 30 days</p><h2 id="trending" class="section-title">Trending on the shelves</h2></div>
+      <a href="{% url 'browse' %}?sort=popular" class="link text-sm shrink-0">See all →</a>
+    </div>
+    <div class="shelf-row">{% for book in trending %}{% book_card book compact=True %}{% endfor %}</div>
+  </section>
+
+  <section aria-labelledby="genres">
+    <p class="label-mono">Wander the stacks</p>
+    <h2 id="genres" class="section-title mb-6">Browse by genre</h2>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      {% for genre in genres %}
+        <a href="{% url 'browse' %}?genre={{ genre.slug }}" class="card group flex flex-col gap-2 p-4 transition hover:-translate-y-0.5 hover:border-ink">
+          <span class="text-3xl transition group-hover:scale-110 origin-left">{{ genre.emoji }}</span>
+          <span class="font-semibold leading-tight">{{ genre.name }}</span>
+          <span class="text-xs text-muted">{{ genre.n }} book{{ genre.n|pluralize }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="grid gap-12 lg:grid-cols-3">
+    <section class="lg:col-span-2" aria-labelledby="top-rated">
+      <div class="mb-6 flex items-end justify-between">
+        <div><p class="label-mono">Loved by readers</p><h2 id="top-rated" class="section-title">Top rated</h2></div>
+        <a href="{% url 'browse' %}?sort=rating" class="link text-sm">See all →</a>
+      </div>
+      <div class="grid grid-cols-2 gap-6 sm:grid-cols-3">{% for book in top_rated %}{% book_card book %}{% endfor %}</div>
+    </section>
+
+    <aside class="space-y-6" aria-labelledby="readers">
+      <div class="card-pad">
+        <p class="label-mono">This season</p>
+        <h2 id="readers" class="font-display text-xl font-semibold mb-4">Top readers</h2>
+        <ol class="space-y-3">
+          {% for p in top_readers %}
+            <li class="flex items-center gap-3">
+              <span class="w-5 font-mono text-sm text-muted">{{ forloop.counter }}</span>
+              <span class="grid h-9 w-9 place-items-center rounded-full bg-paper-2 text-xs font-bold">{{ p.initials }}</span>
+              <span class="flex-1 min-w-0"><span class="block truncate font-medium">{{ p.user.username }}</span><span class="block text-xs text-muted">{{ p.level_info.title }}</span></span>
+              <span class="font-mono text-sm">{{ p.xp }} XP</span>
+            </li>
+          {% empty %}<li class="text-sm text-muted">Be the first on the board!</li>{% endfor %}
+        </ol>
+        <a href="{% url 'leaderboard' %}" class="btn-outline btn-sm mt-5 w-full">Full leaderboard</a>
+      </div>
+      <div class="card-pad bg-ink! text-paper">
+        <p class="font-mono text-[11px] uppercase tracking-[0.14em] opacity-70">Your year in books</p>
+        <h3 class="font-display text-2xl font-semibold mt-1">Reading Wrapped 🎁</h3>
+        <p class="mt-2 text-sm opacity-80">Pages read, your top moods, favourite author and your reader persona — all in one shareable recap.</p>
+        <a href="{% url 'wrapped' %}" class="btn-primary btn-sm mt-4">See my Wrapped</a>
+      </div>
+    </aside>
+  </div>
+
+  <section aria-labelledby="new">
+    <div class="mb-6 flex items-end justify-between">
+      <div><p class="label-mono">Fresh off the cart</p><h2 id="new" class="section-title">New arrivals</h2></div>
+      <a href="{% url 'browse' %}?sort=newest" class="link text-sm">See all →</a>
+    </div>
+    <div class="shelf-row">{% for book in new_arrivals %}{% book_card book compact=True %}{% endfor %}</div>
+  </section>
+
+  <!-- How it works -->
+  <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="card-pad"><p class="text-3xl">💰</p><h3 class="mt-3 font-semibold">Top up once</h3><p class="mt-1 text-sm text-ink-soft">Add credit to your wallet. Fees are small and half comes back when you return on time.</p></div>
+    <div class="card-pad"><p class="text-3xl">📚</p><h3 class="mt-3 font-semibold">Borrow for {{ LIBRARY.LOAN_DAYS }} days</h3><p class="mt-1 text-sm text-ink-soft">Renew up to {{ LIBRARY.MAX_RENEWALS }}× from your dashboard if nobody's waiting.</p></div>
+    <div class="card-pad"><p class="text-3xl">⏳</p><h3 class="mt-3 font-semibold">Join the waitlist</h3><p class="mt-1 text-sm text-ink-soft">All copies out? We'll hold the next one for you for {{ LIBRARY.HOLD_PICKUP_HOURS }} hours.</p></div>
+    <div class="card-pad"><p class="text-3xl">🏅</p><h3 class="mt-3 font-semibold">Level up</h3><p class="mt-1 text-sm text-ink-soft">Earn XP and badges for reading widely, reviewing and returning on time.</p></div>
+  </section>
+</div>
+{% endblock %}

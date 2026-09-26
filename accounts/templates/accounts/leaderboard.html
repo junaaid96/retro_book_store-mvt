@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard · RetroBookStore{% endblock %}
+
+{% block content %}
+<div class="container-page max-w-4xl py-10">
+  <p class="label-mono">Community</p>
+  <h1 class="font-display text-4xl font-bold">Reader leaderboard</h1>
+  <p class="mt-2 text-ink-soft">XP comes from borrowing (+10), returning on time (+15), reviewing (+20), blind dates (+25) and badges (+50).</p>
+
+  {% if readers %}
+  <div class="mt-10 grid grid-cols-3 items-end gap-3 sm:gap-6">
+    {% for p in readers|slice:":3" %}
+      <div class="card-pad text-center {% if forloop.counter == 1 %}order-2 pb-10 !border-mustard{% elif forloop.counter == 2 %}order-1{% else %}order-3{% endif %}">
+        <p class="text-3xl">{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}</p>
+        <span class="mx-auto mt-2 grid h-14 w-14 place-items-center rounded-full bg-paper-2 font-bold">{{ p.initials }}</span>
+        <p class="mt-2 truncate font-semibold">{{ p.user.username }}</p>
+        <p class="text-xs text-muted">{{ p.level_info.title }}</p>
+        <p class="mt-2 font-mono font-semibold">{{ p.xp }} XP</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="card mt-8 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-paper-2/60 text-left"><tr><th class="px-5 py-3">#</th><th class="px-5 py-3">Reader</th><th class="px-5 py-3">Level</th><th class="px-5 py-3 text-right">This month</th><th class="px-5 py-3 text-right">Badges</th><th class="px-5 py-3 text-right">XP</th></tr></thead>
+      <tbody class="divide-y divide-line">
+        {% for p in readers %}
+          <tr class="{% if p.user_id == user.id %}bg-mustard/10 font-semibold{% endif %}">
+            <td class="px-5 py-3 font-mono text-muted">{{ forloop.counter }}</td>
+            <td class="px-5 py-3">{{ p.user.username }}{% if p.user_id == user.id %} (you){% endif %}</td>
+            <td class="px-5 py-3">Lv {{ p.level_info.level }} · {{ p.level_info.title }}</td>
+            <td class="px-5 py-3 text-right">{{ p.month_books }} 📚</td>
+            <td class="px-5 py-3 text-right">{{ p.badge_count }} 🏅</td>
+            <td class="px-5 py-3 text-right font-mono">{{ p.xp }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="card-pad mt-8 py-12 text-center text-muted">No readers on the board yet — borrow a book to claim the top spot!</div>
+  {% endif %}
+</div>
+{% endblock %}

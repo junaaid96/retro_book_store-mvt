@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: retro-book-store
+    runtime: python
+    buildCommand: ./build.sh
+    startCommand: gunicorn retro_book_store.wsgi:application --workers 3 --timeout 60
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false   # paste the Neon pooled connection string in the dashboard
+  - type: cron
+    name: retro-book-store-sweep
+    runtime: python
+    schedule: "0 * * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py circulation_sweep
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Settings · RetroBookStore{% endblock %}
+
+{% block content %}
+<div class="container-page max-w-3xl py-10">
+  <p class="label-mono">Account</p>
+  <h1 class="font-display text-4xl font-bold">Settings</h1>
+
+  <form method="post" class="mt-8 space-y-8">
+    {% csrf_token %}
+    <section class="card-pad space-y-5">
+      <h2 class="font-display text-xl font-semibold">Profile</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="form-field">{{ user_form.first_name.as_field_group }}</div>
+        <div class="form-field">{{ user_form.last_name.as_field_group }}</div>
+      </div>
+      <div class="form-field">{{ user_form.email.as_field_group }}</div>
+      <div class="form-field">{{ profile_form.bio.as_field_group }}</div>
+      <div class="form-field">{{ profile_form.address.as_field_group }}</div>
+    </section>
+
+    <section class="card-pad space-y-5">
+      <h2 class="font-display text-xl font-semibold">Reading</h2>
+      <div class="form-field max-w-xs">{{ profile_form.reading_goal.as_field_group }}</div>
+      <fieldset>
+        <legend class="mb-2 text-sm font-semibold text-ink-soft">Favourite genres — shapes your recommendations</legend>
+        <div class="flex flex-wrap gap-2">
+          {% for choice in profile_form.favorite_genres %}<label class="chip text-xs">{{ choice.tag }}<span>{{ choice.choice_label }}</span></label>{% endfor %}
+        </div>
+      </fieldset>
+      <label class="flex items-center gap-3 text-sm">{{ profile_form.email_notifications }} {{ profile_form.email_notifications.label }}</label>
+    </section>
+
+    <div class="flex justify-end gap-3">
+      <a href="{% url 'dashboard' %}" class="btn-ghost">Cancel</a>
+      <button class="btn-primary">Save changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

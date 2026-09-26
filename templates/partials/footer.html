@@ -1,0 +1,32 @@
+<footer class="mt-24 border-t border-line bg-paper-2/60">
+  <div class="container-page grid gap-10 py-12 md:grid-cols-4">
+    <div class="md:col-span-2">
+      <p class="font-display text-2xl font-bold">Retro<span class="text-accent">Book</span>Store</p>
+      <p class="mt-2 max-w-sm text-sm text-ink-soft">A neighbourhood lending library, reimagined. Borrow by mood, go on a blind date with a book, and watch your reading year come together.</p>
+    </div>
+    <div>
+      <p class="label-mono mb-3">Explore</p>
+      <ul class="space-y-2 text-sm">
+        <li><a class="link" href="{% url 'browse' %}">Browse the catalogue</a></li>
+        <li><a class="link" href="{% url 'discover' %}">Find by mood</a></li>
+        <li><a class="link" href="{% url 'blind_date' %}">Blind Date with a Book</a></li>
+        <li><a class="link" href="{% url 'leaderboard' %}">Reader leaderboard</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="label-mono mb-3">How it works</p>
+      <ul class="space-y-2 text-sm text-ink-soft">
+        <li>{{ LIBRARY.LOAN_DAYS }}-day loans, {{ LIBRARY.MAX_RENEWALS }} renewals</li>
+        <li>Half your fee back on return</li>
+        <li>Up to {{ LIBRARY.MAX_ACTIVE_LOANS }} books at once</li>
+        <li>Waitlist copies held {{ LIBRARY.HOLD_PICKUP_HOURS }}h</li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-line">
+    <div class="container-page flex flex-col gap-2 py-5 text-xs text-muted sm:flex-row sm:justify-between">
+      <p>© {% now "Y" %} RetroBookStore · Covers courtesy of <a class="link" href="https://openlibrary.org" rel="noopener">Open Library</a></p>
+      <p>Press <kbd class="rounded border border-line px-1 font-mono">⌘K</kbd> to search anywhere · <a class="link" href="https://github.com/junaaid96" rel="noopener">Contact</a></p>
+    </div>
+  </div>
+</footer>

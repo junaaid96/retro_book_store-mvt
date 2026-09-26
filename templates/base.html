@@ -1,29 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="h-full">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="retro book store" />
-    <title>{% block title %} {% endblock %}</title>
-    <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.0.1/dist/tailwind.min.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}RetroBookStore — borrow stories, not shelves{% endblock %}</title>
+  <meta name="description" content="{% block description %}A cosy digital lending library with mood-based discovery, blind dates with books, waitlists and a yearly Reading Wrapped.{% endblock %}">
+  <meta name="theme-color" content="#fbf6ec">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://covers.openlibrary.org">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&family=Fraunces:opsz,wght@9..144,400..800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) document.documentElement.classList.add("dark");
+      } catch (e) {}
+    })();
+  </script>
+  <script defer src="{% static 'js/vendor/htmx.min.js' %}"></script>
+  <script defer src="{% static 'js/app.js' %}"></script>
+  <script defer src="{% static 'js/vendor/alpine.min.js' %}"></script>
+  {% block head %}{% endblock %}
 </head>
+<body class="min-h-full flex flex-col" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+      x-data="palette" @keydown.window.prevent.ctrl.k="toggle()" @keydown.window.prevent.meta.k="toggle()" @keydown.window.escape="open = false">
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 btn-dark">Skip to content</a>
+  {% include "partials/navbar.html" %}
+  {% include "partials/messages.html" %}
 
-<body>
-    <!-- Navbar -->
-    {% include 'navbar.html' %}
+  <main id="main" class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
 
-    <!-- Showing Messages -->
-    <div class="w-1/2 m-auto">
-        {% include 'messages.html' %}
-    </div>
-
-    <!-- Content -->
-    {% block content %} {% endblock %}
-
-    <!-- Footer -->
-    {% include 'footer.html' %}
+  {% include "partials/footer.html" %}
+  {% include "partials/command_palette.html" %}
+  {% block scripts %}{% endblock %}
 </body>
-
 </html>

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load retro %}
+{% block title %}Borrowing history · RetroBookStore{% endblock %}
+
+{% block content %}
+<div class="container-page py-10">
+  <p class="label-mono">Every book you've borrowed</p>
+  <h1 class="font-display text-4xl font-bold">Borrowing history</h1>
+  <div class="card mt-8 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-paper-2/60 text-left"><tr>
+        <th class="px-5 py-3 font-semibold">Book</th><th class="px-5 py-3 font-semibold">Borrowed</th>
+        <th class="px-5 py-3 font-semibold">Returned</th><th class="px-5 py-3 text-right font-semibold">Fee</th>
+        <th class="px-5 py-3 text-right font-semibold">Refund</th><th class="px-5 py-3 font-semibold"></th>
+      </tr></thead>
+      <tbody class="divide-y divide-line">
+        {% for loan in page.object_list %}
+          <tr class="hover:bg-paper-2/40">
+            <td class="px-5 py-3"><a href="{{ loan.book.get_absolute_url }}" class="flex items-center gap-3"><span class="w-9 shrink-0">{% cover loan.book %}</span><span><span class="block font-medium hover:text-accent">{{ loan.book.title }}</span><span class="text-xs text-muted">{{ loan.book.author.name }}{% if loan.via_blind_date %} · 💌{% endif %}</span></span></a></td>
+            <td class="whitespace-nowrap px-5 py-3">{{ loan.borrowed_at|date:"j M Y" }}</td>
+            <td class="whitespace-nowrap px-5 py-3">
+              {% if loan.returned_at %}{{ loan.returned_at|date:"j M Y" }}{% if loan.late_fee %} <span class="pill-bad">late</span>{% else %} <span class="pill-ok">on time</span>{% endif %}
+              {% elif loan.is_overdue %}<span class="pill-bad">Overdue</span>{% else %}<span class="pill-warn">Reading</span>{% endif %}
+            </td>
+            <td class="whitespace-nowrap px-5 py-3 text-right font-mono">{{ loan.fee_paid|money }}</td>
+            <td class="whitespace-nowrap px-5 py-3 text-right font-mono">{% if loan.returned_at %}{{ loan.refund|money }}{% if loan.late_fee %}<span class="block text-xs text-danger">−{{ loan.late_fee|money }} late</span>{% endif %}{% else %}—{% endif %}</td>
+            <td class="px-5 py-3 text-right">
+              {% if not loan.returned_at %}<form method="post" action="{% url 'return_book' loan.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn-dark btn-sm">Return</button></form>
+              {% else %}<a href="{{ loan.book.get_absolute_url }}#reviews" class="link text-xs">Review</a>{% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="px-5 py-12 text-center text-muted">No loans yet — your story starts with the first book.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

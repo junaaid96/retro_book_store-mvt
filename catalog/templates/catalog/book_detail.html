@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load retro %}
+{% block title %}{{ book.title }} by {{ book.author.name }} · RetroBookStore{% endblock %}
+{% block description %}{{ book.description|truncatechars:155 }}{% endblock %}
+
+{% block content %}
+<div class="container-page py-10">
+  <nav class="mb-6 text-sm text-muted" aria-label="Breadcrumb">
+    <a href="{% url 'browse' %}" class="link">Browse</a> <span aria-hidden="true">/</span>
+    {% with g=book.genres.all|first %}{% if g %}<a href="{% url 'browse' %}?genre={{ g.slug }}" class="link">{{ g.name }}</a> <span aria-hidden="true">/</span>{% endif %}{% endwith %}
+    <span class="text-ink">{{ book.title }}</span>
+  </nav>
+
+  <div class="grid gap-10 lg:grid-cols-12">
+    <!-- Cover column -->
+    <div class="lg:col-span-3">
+      <div class="mx-auto max-w-[260px] lg:sticky lg:top-24 space-y-4">
+        {% cover book extra="shadow-2xl" %}
+        {% if user.is_authenticated %}{% include "catalog/partials/shelf_button.html" %}{% endif %}
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="lg:col-span-6 space-y-6">
+      <div class="flex flex-wrap gap-2">
+        {% for g in book.genres.all %}<a href="{% url 'browse' %}?genre={{ g.slug }}" class="chip !py-1 text-xs">{{ g.emoji }} {{ g.name }}</a>{% endfor %}
+      </div>
+      <div>
+        <h1 class="font-display text-4xl font-bold leading-tight sm:text-5xl">{{ book.title }}</h1>
+        <p class="mt-2 text-lg text-ink-soft">by <a href="{{ book.author.get_absolute_url }}" class="link font-medium text-ink">{{ book.author.name }}</a></p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+        {% if book.avg_rating %}
+          <a href="#reviews" class="flex items-center gap-2">{% include "partials/stars.html" with rating=book.avg_rating %}<span class="font-semibold">{{ book.avg_rating|floatformat:1 }}</span><span class="text-muted">· {{ book.review_count }} review{{ book.review_count|pluralize }}</span></a>
+        {% else %}<span class="text-muted">No reviews yet</span>{% endif %}
+        <span class="text-muted">Borrowed {{ book.times_borrowed }} time{{ book.times_borrowed|pluralize }}</span>
+      </div>
+
+      <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-xl border border-line bg-surface p-3"><dt class="label-mono">Pages</dt><dd class="font-semibold">{{ book.pages|default:"—" }}</dd></div>
+        <div class="rounded-xl border border-line bg-surface p-3"><dt class="label-mono">Published</dt><dd class="font-semibold">{{ book.published_year|default:"—" }}</dd></div>
+        <div class="rounded-xl border border-line bg-surface p-3"><dt class="label-mono">Pace</dt><dd class="font-semibold">{{ book.get_pace_display }}</dd></div>
+        <div class="rounded-xl border border-line bg-surface p-3"><dt class="label-mono">Language</dt><dd class="font-semibold">{{ book.language }}</dd></div>
+      </dl>
+
+      <div class="text-lg leading-relaxed text-ink-soft">{{ book.description|linebreaks }}</div>
+
+      {% if book.moods.all %}
+      <div>
+        <p class="label-mono mb-2">Reads as</p>
+        <div class="flex flex-wrap gap-2">
+          {% for m in book.moods.all %}<a href="{% url 'discover' %}?mood={{ m.slug }}" class="chip text-sm">{{ m.emoji }} {{ m.name }}</a>{% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Borrow card -->
+    <aside class="lg:col-span-3">
+      <div class="card-pad lg:sticky lg:top-24 space-y-5">
+        {% with free=book.available_copies %}
+        <div class="flex items-baseline justify-between">
+          <span class="font-display text-3xl font-bold">{{ fee|money }}</span>
+          <span class="text-sm text-muted">for {{ loan_days }} days</span>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm"><span>{% if free %}<span class="text-success font-semibold">{{ free }} of {{ book.total_copies }}</span> available{% else %}<span class="text-danger font-semibold">All {{ book.total_copies }} out</span>{% endif %}</span>
+          {% if book.waiting %}<span class="text-muted">{{ book.waiting }} waiting</span>{% endif %}</div>
+          <div class="progress mt-2"><span style="width: {{ free|percent:book.total_copies }}%" class="!bg-success"></span></div>
+          {% if not free and next_due %}<p class="mt-2 text-xs text-muted">Next copy due back {{ next_due|date:"D j M" }}</p>{% endif %}
+        </div>
+
+        {% if not user.is_authenticated %}
+          <a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="btn-primary w-full">Log in to borrow</a>
+          <p class="text-center text-xs text-muted">New here? <a href="{% url 'register' %}" class="link">Create a free account</a></p>
+
+        {% elif active_loan %}
+          <div class="rounded-xl bg-success/10 p-4 text-sm">
+            <p class="font-semibold text-success">📖 It's on your nightstand</p>
+            <p class="mt-1">Due <span class="stamp text-accent ml-1">{{ active_loan.due_at|date:"d M" }}</span></p>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <form method="post" action="{% url 'renew' active_loan.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn-outline w-full btn-sm">Renew</button></form>
+            <form method="post" action="{% url 'return_book' active_loan.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn-dark w-full btn-sm">Return</button></form>
+          </div>
+
+        {% elif my_hold and my_hold.status == 'ready' %}
+          <div class="rounded-xl bg-mustard/15 p-4 text-sm">
+            <p class="font-semibold">📬 Your copy is waiting!</p>
+            <p class="mt-1 text-ink-soft">Borrow before {{ my_hold.expires_at|date:"D j M, H:i" }}.</p>
+          </div>
+          <form method="post" action="{% url 'borrow' book.slug %}">{% csrf_token %}<button class="btn-primary w-full">Borrow now</button></form>
+
+        {% elif my_hold %}
+          <div class="rounded-xl bg-paper-2 p-4 text-sm">
+            <p class="font-semibold">⏳ You're #{{ my_hold.position }} in line</p>
+            <p class="mt-1 text-ink-soft">We'll notify you and hold a copy for {{ LIBRARY.HOLD_PICKUP_HOURS }}h.</p>
+          </div>
+          <form method="post" action="{% url 'cancel_hold' my_hold.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn-ghost btn-sm w-full">Leave waitlist</button></form>
+
+        {% elif free %}
+          <form method="post" action="{% url 'borrow' book.slug %}">{% csrf_token %}
+            <button class="btn-primary btn-lg w-full">Borrow this book</button>
+          </form>
+          <p class="text-center text-xs text-muted">Wallet: <span class="font-mono {% if balance < fee %}text-danger{% endif %}">{{ balance|money }}</span>
+            {% if balance < fee %} · <a class="link" href="{% url 'wallet' %}?next={{ request.path|urlencode }}">Top up</a>{% endif %}</p>
+
+        {% else %}
+          <form method="post" action="{% url 'place_hold' book.slug %}">{% csrf_token %}
+            <button class="btn-dark btn-lg w-full">Join waitlist{% if book.waiting %} (#{{ book.waiting|add:1 }}){% endif %}</button>
+          </form>
+          <p class="text-center text-xs text-muted">Free to join. We'll save you a copy.</p>
+        {% endif %}
+        {% endwith %}
+
+        <ul class="space-y-1.5 border-t border-line pt-4 text-xs text-muted">
+          <li>↩︎ Return on time for {{ REFUND_PERCENT }}% back</li>
+          <li>🔁 Renew up to {{ LIBRARY.MAX_RENEWALS }}× · +{{ LIBRARY.RENEW_DAYS }} days each</li>
+          <li>⏰ Late fee {{ LIBRARY.LATE_FEE_PER_DAY|money }}/day</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Reviews -->
+  <section id="reviews" class="mt-20 grid gap-10 lg:grid-cols-12 scroll-mt-24">
+    <div class="lg:col-span-4 space-y-6">
+      <h2 class="section-title">Reader reviews</h2>
+      <div class="card-pad">
+        <div class="flex items-center gap-4">
+          <span class="font-display text-5xl font-bold">{{ book.avg_rating|floatformat:1|default:"–" }}</span>
+          <div>{% include "partials/stars.html" with rating=book.avg_rating size="h-5 w-5" %}<p class="text-sm text-muted">{{ book.review_count }} review{{ book.review_count|pluralize }}</p></div>
+        </div>
+        <div class="mt-5 space-y-2">
+          {% for stars, count, pct in rating_bars %}
+            <div class="flex items-center gap-3 text-sm"><span class="w-6 font-mono">{{ stars }}★</span><div class="progress flex-1"><span style="width: {{ pct }}%" class="!bg-mustard"></span></div><span class="w-6 text-right text-muted">{{ count }}</span></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if can_review %}
+        <form method="post" action="{% url 'review_submit' book.slug %}" class="card-pad space-y-4" x-data="stars({{ my_review.rating|default:0 }})">
+          {% csrf_token %}
+          <p class="font-semibold">{% if my_review %}Update your review{% else %}You've read it — what did you think?{% endif %}</p>
+          <fieldset>
+            <legend class="sr-only">Rating</legend>
+            <div class="flex gap-1" @mouseleave="hover = 0">
+              {% for i in "12345" %}
+                <label class="cursor-pointer" @mouseenter="hover = {{ i }}">
+                  <input type="radio" name="rating" value="{{ i }}" class="sr-only" x-model.number="value" {% if my_review.rating == i|add:0 %}checked{% endif %} required>
+                  <svg class="h-8 w-8 transition" :class="shown >= {{ i }} ? 'text-mustard scale-110' : 'text-line'" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.5 7.7l5.9-.9z"/></svg>
+                  <span class="sr-only">{{ i }} star{{ i|pluralize }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+          <div class="form-field">{{ review_form.body }}</div>
+          {% if review_form.chemistry %}<div class="form-field">{{ review_form.chemistry.label_tag }}{{ review_form.chemistry }}</div>{% endif %}
+          <label class="flex items-center gap-2 text-sm">{{ review_form.contains_spoilers }} Contains spoilers</label>
+          <button class="btn-primary w-full">{% if my_review %}Save changes{% else %}Post review · +20 XP{% endif %}</button>
+        </form>
+      {% elif user.is_authenticated %}
+        <p class="rounded-xl border border-dashed border-line p-4 text-sm text-muted">Only readers who've borrowed this book can review it — that's how we keep reviews honest.</p>
+      {% endif %}
+    </div>
+
+    <div class="lg:col-span-8 space-y-4">
+      {% for review in reviews %}
+        <article class="card-pad" x-data="{ reveal: {{ review.contains_spoilers|yesno:'false,true' }} }">
+          <header class="flex items-center gap-3">
+            <span class="grid h-10 w-10 place-items-center rounded-full bg-paper-2 text-sm font-bold">{{ review.user.profile.initials }}</span>
+            <div class="flex-1">
+              <p class="font-semibold">{{ review.user.username }} <span class="pill-ok ml-1">Verified borrower</span></p>
+              <p class="text-xs text-muted">{{ review.created_at|date:"j M Y" }}{% if review.chemistry %} · Blind date: {{ review.get_chemistry_display }}{% endif %}</p>
+            </div>
+            {% include "partials/stars.html" with rating=review.rating %}
+          </header>
+          <div class="relative mt-3">
+            <p class="text-ink-soft leading-relaxed transition" :class="reveal ? '' : 'blur-sm select-none'">{{ review.body|linebreaksbr }}</p>
+            <button type="button" x-show="!reveal" @click="reveal = true" class="absolute inset-0 m-auto h-fit w-fit btn-dark btn-sm">⚠️ Spoilers — tap to reveal</button>
+          </div>
+        </article>
+      {% empty %}
+        <div class="card-pad py-12 text-center text-muted">No reviews yet. Borrow it and be the first! ✍️</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if also %}
+  <section class="mt-20">
+    <p class="label-mono">Readers who borrowed this also borrowed</p>
+    <h2 class="section-title mb-6">Keep the thread going</h2>
+    <div class="shelf-row">{% for b in also %}{% book_card b compact=True %}{% endfor %}</div>
+  </section>
+  {% endif %}
+
+  {% if similar %}
+  <section class="mt-16">
+    <p class="label-mono">Same genres & moods</p>
+    <h2 class="section-title mb-6">If you like this, try…</h2>
+    <div class="shelf-row">{% for b in similar %}{% book_card b compact=True %}{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

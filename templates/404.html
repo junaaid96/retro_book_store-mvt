@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Page not found · RetroBookStore{% endblock %}
+{% block content %}
+<div class="container-page flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
+  <p class="stamp text-accent text-lg">404 · Misshelved</p>
+  <h1 class="mt-6 font-display text-5xl font-bold">This page wandered off the shelf.</h1>
+  <p class="mt-4 max-w-md text-ink-soft">Maybe someone borrowed it and forgot to return it. Let's get you back to the stacks.</p>
+  <div class="mt-8 flex gap-3"><a href="{% url 'home' %}" class="btn-primary">Go home</a><a href="{% url 'browse' %}" class="btn-outline">Browse books</a></div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% load retro %}
+<a href="{{ book.get_absolute_url }}" class="book-card group block {% if compact %}w-36 sm:w-40{% endif %}">
+  <div class="relative">
+    {% cover book %}
+    {% with free=book.available_copies %}
+      <span class="absolute -bottom-2.5 left-2 z-10 {% if free %}pill-ok{% elif book.waiting %}pill-warn{% else %}pill-muted{% endif %} !bg-surface/95 shadow-sm backdrop-blur">
+        {% if free %}● {{ free }} available{% elif book.waiting %}⏳ {{ book.waiting }} waiting{% else %}All out{% endif %}
+      </span>
+    {% endwith %}
+  </div>
+  <div class="mt-4 space-y-0.5">
+    <p class="font-display font-semibold leading-snug line-clamp-2 group-hover:text-accent transition">{{ book.title }}</p>
+    <p class="text-sm text-muted truncate">{{ book.author.name }}</p>
+    <div class="flex items-center justify-between pt-1 text-xs">
+      {% if book.avg_rating %}
+        <span class="flex items-center gap-1 text-ink-soft" aria-label="Rated {{ book.avg_rating|floatformat:1 }} out of 5">
+          <span class="text-mustard">★</span>{{ book.avg_rating|floatformat:1 }}<span class="text-muted">({{ book.review_count }})</span>
+        </span>
+      {% else %}<span class="text-muted">New</span>{% endif %}
+      <span class="font-mono font-semibold">{{ book.borrowing_fee|money }}</span>
+    </div>
+  </div>
+</a>

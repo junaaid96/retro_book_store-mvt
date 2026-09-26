@@ -48,6 +48,7 @@ urlpatterns = [
     path("leaderboard/", accounts.leaderboard, name="leaderboard"),
     # Staff
     path("staff/", core.staff_dashboard, name="staff_dashboard"),
+    path("cron/circulation-sweep/", core.cron_sweep, name="cron_sweep"),
 ]
 
 if settings.DEBUG:

@@ -57,12 +57,26 @@ npm run watch:css    # while developing
 
 Tests: `python manage.py test` (needs a Postgres the role can create a test DB on).
 
-## Deploy (Render + Neon)
+## Deploy (Vercel + Neon)
 
-1. In Render set the environment variables `DATABASE_URL` (Neon **pooled** connection string), `SECRET_KEY`, `DEBUG=False`.
-2. Build command: `./build.sh` · Start command: `gunicorn retro_book_store.wsgi:application`
-3. Optional: add a cron job running `python manage.py circulation_sweep` hourly for due/overdue reminders and hold expiry (see `render.yaml`).
+Live: https://retro-book-store.vercel.app — every push to `main` deploys to production.
+
+- **Hosting:** Vercel's Django runtime (functions in `sin1`, next to the Neon database). Vercel runs `collectstatic` itself and serves `/static/` from its CDN.
+- **Migrations:** `vercel.json` runs `python manage.py migrate` on production builds only (previews share the database, so they just run `check`).
+- **Media uploads:** book covers go to the public `retro-media` bucket in Neon Object Storage via `django-storages` (S3 API).
+- **Scheduled job:** Vercel Cron calls `/cron/circulation-sweep/` daily (Hobby plan limit) to expire holds and send due/overdue reminders. Any other scheduler can call it too with the header `Authorization: Bearer $CRON_SECRET`.
+
+Environment variables (Vercel → Project → Settings → Environment Variables):
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon pooled connection string |
+| `SECRET_KEY`, `DEBUG=False` | Django |
+| `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` | `.vercel.app` / `https://*.vercel.app` |
+| `AWS_ENDPOINT_URL_S3`, `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_STORAGE_BUCKET_NAME` | Neon Object Storage credential + bucket |
+| `CRON_SECRET` | Protects the cron endpoint |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | Optional SMTP |
 
 ## Tech
 
-Python 3.12 · Django 5.2 LTS · PostgreSQL 17 on Neon (full-text search, pg_trgm) · Tailwind CSS 4 · HTMX 2 · Alpine.js 3 · Chart.js 4 · WhiteNoise · Gunicorn
+Python 3.12 · Django 5.2 LTS · PostgreSQL 17 on Neon (full-text search, pg_trgm) · Tailwind CSS 4 · HTMX 2 · Alpine.js 3 · Chart.js 4 · WhiteNoise · django-storages · Vercel

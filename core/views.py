@@ -1,14 +1,23 @@
+import hmac
+import logging
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count, ExpressionWrapper, F, FloatField, Q, Sum
 from django.db.models.functions import TruncDate
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
 
 from accounts.models import Profile, Transaction
 from catalog.models import Book
 from circulation.models import Hold, Loan
+from circulation.services import send_reminders, sweep_holds
+
+log = logging.getLogger(__name__)
 
 
 @staff_member_required
@@ -50,3 +59,23 @@ def staff_dashboard(request):
         "chart": {"labels": [d.strftime("%d %b") for d in days], "values": [daily.get(d, 0) for d in days]},
     }
     return render(request, "core/staff_dashboard.html", context)
+
+
+@never_cache
+@require_http_methods(["GET", "POST"])
+def cron_sweep(request):
+    """Scheduled job: expire stale holds, promote waitlists, send due/overdue reminders.
+
+    Called by Vercel Cron (which sends ``Authorization: Bearer $CRON_SECRET``) or any
+    external scheduler such as cron-job.org configured with the same header.
+    """
+    secret = settings.CRON_SECRET
+    if not secret:
+        return JsonResponse({"error": "CRON_SECRET is not configured"}, status=503)
+    supplied = request.headers.get("Authorization", "")
+    if not hmac.compare_digest(supplied.encode(), f"Bearer {secret}".encode()):
+        return JsonResponse({"error": "unauthorized"}, status=401)
+    sweep_holds()
+    sent = send_reminders()
+    log.info("Circulation sweep done, %s reminder(s) sent", sent)
+    return JsonResponse({"ok": True, "reminders_sent": sent, "ran_at": timezone.now().isoformat()})

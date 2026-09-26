@@ -7,6 +7,7 @@ local `.env` file). See `.env.example` for the full list.
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
 import dj_database_url
 import environ
@@ -117,6 +118,39 @@ STORAGES = {
         )
     },
 }
+
+# Uploaded media (book covers) go to Neon Object Storage when configured.
+# Serverless hosts like Vercel have no writable disk, so this is required there.
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default="")
+if AWS_STORAGE_BUCKET_NAME:
+    from botocore.config import Config
+
+    AWS_ENDPOINT_URL_S3 = env("AWS_ENDPOINT_URL_S3")
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "endpoint_url": AWS_ENDPOINT_URL_S3,
+            "region_name": env("AWS_REGION", default="us-east-1"),
+            "access_key": env("AWS_ACCESS_KEY_ID"),
+            "secret_key": env("AWS_SECRET_ACCESS_KEY"),
+            # The bucket is public_read, so serve plain URLs instead of signed ones.
+            "querystring_auth": False,
+            "default_acl": None,
+            "file_overwrite": False,
+            "custom_domain": f"{urlparse(AWS_ENDPOINT_URL_S3).netloc}/{AWS_STORAGE_BUCKET_NAME}",
+            "object_parameters": {"CacheControl": "public, max-age=31536000, immutable"},
+            "client_config": Config(
+                signature_version="s3v4",
+                s3={"addressing_style": "path"},
+                request_checksum_calculation="when_required",
+                response_checksum_validation="when_required",
+            ),
+        },
+    }
+
+# Shared secret for the scheduled circulation sweep (Vercel Cron / cron-job.org).
+CRON_SECRET = env("CRON_SECRET", default="")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

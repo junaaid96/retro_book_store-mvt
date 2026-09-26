@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load retro humanize %}
+{% block title %}{{ year }} Reading Wrapped · RetroBookStore{% endblock %}
+
+{% block content %}
+<div class="container-page max-w-5xl py-10">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="label-mono">Reading Wrapped</p>
+      <h1 class="font-display text-5xl font-bold">Your {{ year }} in books</h1>
+    </div>
+    {% if years|length > 1 %}
+      <nav class="flex gap-1.5" aria-label="Year">{% for y in years %}<a href="{% url 'wrapped_year' y %}" class="chip !py-1 text-sm {% if y == year %}chip-active{% endif %}">{{ y }}</a>{% endfor %}</nav>
+    {% endif %}
+  </div>
+
+  {% if not borrowed %}
+    <div class="card-pad mt-10 py-16 text-center">
+      <p class="text-5xl">📭</p>
+      <p class="mt-3 text-ink-soft">No books borrowed in {{ year }} yet. Your Wrapped fills up as you read.</p>
+      <a href="{% url 'discover' %}" class="btn-primary mt-6">Find your first book</a>
+    </div>
+  {% else %}
+  <!-- Persona hero -->
+  <section class="relative mt-8 overflow-hidden rounded-3xl bg-ink p-8 text-paper sm:p-12">
+    <div class="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-accent/50 blur-3xl" aria-hidden="true"></div>
+    <div class="absolute -bottom-24 left-10 h-72 w-72 rounded-full bg-teal/50 blur-3xl" aria-hidden="true"></div>
+    <div class="relative grid items-center gap-8 md:grid-cols-2">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.2em] opacity-70">Your reader persona</p>
+        <p class="mt-3 font-display text-4xl font-bold leading-tight sm:text-5xl">{{ persona|default:"The Curious Reader" }}</p>
+        <p class="mt-4 max-w-md opacity-80">You borrowed <strong>{{ borrowed }}</strong> book{{ borrowed|pluralize }}, finished <strong>{{ finished }}</strong> and turned <strong>{{ pages|intcomma }}</strong> pages{% if top_moods %}, mostly chasing that <strong>{{ top_moods.0.0|lower }}</strong> feeling{% endif %}.</p>
+      </div>
+      <div class="grid grid-cols-4 gap-2" aria-hidden="true">
+        {% for b in covers %}<div class="{% cycle 'rotate-2' '-rotate-2' 'rotate-1' '-rotate-1' %}">{% cover b %}</div>{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Numbers -->
+  <section class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="card-pad"><p class="label-mono">Books finished</p><p class="font-display text-4xl font-bold">{{ finished }}</p></div>
+    <div class="card-pad"><p class="label-mono">Pages turned</p><p class="font-display text-4xl font-bold">{{ pages|intcomma }}</p></div>
+    <div class="card-pad"><p class="label-mono">On-time returns</p><p class="font-display text-4xl font-bold">{% if on_time_rate is not None %}{{ on_time_rate }}%{% else %}—{% endif %}</p></div>
+    <div class="card-pad"><p class="label-mono">Blind dates</p><p class="font-display text-4xl font-bold">{{ blind_dates }} 💌</p></div>
+  </section>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <section class="card-pad">
+      <h2 class="font-display text-xl font-semibold">Month by month</h2>
+      <div class="mt-6 flex h-40 items-end gap-2" role="img" aria-label="Books borrowed per month">
+        {% for n in months %}
+          <div class="flex flex-1 flex-col items-center gap-1">
+            <span class="text-[10px] font-mono text-muted">{% if n %}{{ n }}{% endif %}</span>
+            <div class="w-full rounded-t-md {% if n %}bg-accent{% else %}bg-paper-2{% endif %}" style="height: {% widthratio n month_max 120 %}px; min-height: 4px"></div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="mt-2 flex gap-2">{% for l in month_labels %}<span class="flex-1 text-center font-mono text-[10px] text-muted">{{ l }}</span>{% endfor %}</div>
+    </section>
+
+    <section class="card-pad">
+      <h2 class="font-display text-xl font-semibold">Top genres</h2>
+      <ol class="mt-4 space-y-3">
+        {% for name, n in top_genres %}
+          <li><div class="flex justify-between text-sm"><span>{{ forloop.counter }}. {{ name }}</span><span class="text-muted">{{ n }}</span></div>
+          <div class="progress mt-1"><span style="width: {% widthratio n top_genres.0.1 100 %}%" class="{% cycle '' '!bg-teal' '!bg-mustard' '!bg-plum' '!bg-ink-soft' %}"></span></div></li>
+        {% endfor %}
+      </ol>
+    </section>
+
+    <section class="card-pad">
+      <h2 class="font-display text-xl font-semibold">How your books felt</h2>
+      <div class="mt-4 flex flex-wrap gap-2">
+        {% for name, emoji, n in top_moods %}<span class="chip {% if forloop.first %}chip-active{% endif %}">{{ emoji }} {{ name }} <span class="opacity-60">×{{ n }}</span></span>{% endfor %}
+      </div>
+    </section>
+
+    <section class="card-pad grid grid-cols-2 gap-4">
+      <div><p class="label-mono">Most-read author</p><p class="mt-1 font-display text-xl font-semibold">{{ top_author.0|default:"—" }}</p>{% if top_author %}<p class="text-xs text-muted">{{ top_author.1 }} book{{ top_author.1|pluralize }}</p>{% endif %}</div>
+      <div><p class="label-mono">Longest book</p>{% if longest %}<a href="{{ longest.get_absolute_url }}" class="mt-1 block font-display text-xl font-semibold hover:text-accent">{{ longest.title }}</a><p class="text-xs text-muted">{{ longest.pages }} pages</p>{% else %}<p>—</p>{% endif %}</div>
+      <div><p class="label-mono">Reviews written</p><p class="mt-1 font-display text-xl font-semibold">{{ review_count }}</p></div>
+      <div><p class="label-mono">Avg rating given</p><p class="mt-1 font-display text-xl font-semibold">{% if avg_rating %}{{ avg_rating|floatformat:1 }} ★{% else %}—{% endif %}</p></div>
+    </section>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+<div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center bg-ink/40 px-4 pt-[12vh] backdrop-blur-sm"
+     x-transition.opacity role="dialog" aria-modal="true" aria-label="Quick search" @click.self="open = false">
+  <div class="card w-full max-w-xl overflow-hidden" @click.outside="open = false">
+    <form action="{% url 'browse' %}" class="flex items-center gap-3 border-b border-line px-4">
+      <svg class="h-5 w-5 text-muted" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 3.47 9.77l3.63 3.63a.75.75 0 1 0 1.06-1.06l-3.63-3.63A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clip-rule="evenodd"/></svg>
+      <input id="palette-input" name="q" type="search" autocomplete="off" placeholder="Try “heist”, “murakami” or even “hobit”…"
+             class="w-full bg-transparent py-4 text-lg outline-none placeholder:text-muted"
+             hx-get="{% url 'suggest' %}" hx-trigger="input changed delay:200ms" hx-target="#palette-results">
+      <kbd class="rounded border border-line px-1.5 font-mono text-[10px] text-muted">ESC</kbd>
+    </form>
+    <div id="palette-results" class="max-h-[50vh] overflow-y-auto">
+      <div class="grid grid-cols-2 gap-2 p-4 text-sm sm:grid-cols-3">
+        <a href="{% url 'discover' %}" class="rounded-xl border border-line p-3 hover:border-ink">🎭 Browse by mood</a>
+        <a href="{% url 'blind_date' %}" class="rounded-xl border border-line p-3 hover:border-ink">💌 Blind date</a>
+        <a href="{% url 'browse' %}?available=1" class="rounded-xl border border-line p-3 hover:border-ink">✅ Available now</a>
+        <a href="{% url 'browse' %}?sort=rating" class="rounded-xl border border-line p-3 hover:border-ink">⭐ Top rated</a>
+        <a href="{% url 'browse' %}?short=1" class="rounded-xl border border-line p-3 hover:border-ink">⚡ Quick reads</a>
+        {% if user.is_authenticated %}<a href="{% url 'dashboard' %}" class="rounded-xl border border-line p-3 hover:border-ink">📚 My library</a>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>

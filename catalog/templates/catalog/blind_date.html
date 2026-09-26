@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load retro %}
+{% block title %}Blind Date with a Book · RetroBookStore{% endblock %}
+
+{% block content %}
+<section class="container-page py-14">
+  <div class="mx-auto max-w-2xl text-center">
+    <p class="label-mono">💌 Blind Date with a Book</p>
+    <h1 class="mt-2 font-display text-4xl font-bold sm:text-5xl">Three wrapped books.<br>Three honest hints.</h1>
+    <p class="mt-4 text-ink-soft">No covers, no titles, no judging. Choose the one whose hints make your heart skip, borrow it for <strong>{{ discount }}% off</strong>, and unwrap your match. When you're done, tell us if it was true love or no chemistry.</p>
+  </div>
+
+  {% if cards %}
+  <div class="mt-12 grid gap-8 md:grid-cols-3">
+    {% for card in cards %}
+      <article class="card flex flex-col overflow-hidden animate-rise" style="animation-delay: {{ forloop.counter0 }}00ms">
+        <div class="wrap-paper {{ card.wrapper }} relative flex h-64 items-center justify-center">
+          <div class="relative z-10 w-3/4 rotate-[-2deg] rounded-lg bg-surface/95 p-4 text-center text-ink shadow-lg">
+            <p class="label-mono">Date #{{ forloop.counter }}</p>
+            <p class="mt-1 font-display text-lg font-semibold leading-snug">“{{ card.hints|first|capfirst }}”</p>
+          </div>
+        </div>
+        <div class="flex flex-1 flex-col gap-4 p-6">
+          <ul class="space-y-2">
+            {% for hint in card.hints %}<li class="flex gap-2"><span class="text-accent">♥</span><span>{{ hint|capfirst }}</span></li>{% endfor %}
+          </ul>
+          <div class="flex flex-wrap gap-2 text-xs">
+            {% with m=card.book.moods.all|first %}{% if m %}<span class="pill-muted">{{ m.emoji }} feels {{ m.name|lower }}</span>{% endif %}{% endwith %}
+            <span class="pill-muted">📏 {{ card.length }}</span>
+            <span class="pill-muted">🏃 {{ card.book.get_pace_display|lower }}</span>
+          </div>
+          <div class="mt-auto flex items-center justify-between border-t border-line pt-4">
+            <span><span class="font-display text-2xl font-bold">{{ card.fee|money }}</span> <s class="text-sm text-muted">{{ card.book.borrowing_fee|money }}</s></span>
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'blind_date_borrow' card.book.pk %}">{% csrf_token %}<button class="btn-primary btn-sm">Go on this date</button></form>
+            {% else %}
+              <a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="btn-primary btn-sm">Log in to date</a>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="mt-10 text-center">
+    <a href="{% url 'blind_date' %}" class="btn-outline">🔀 Shuffle new dates</a>
+  </div>
+  {% else %}
+    <div class="card-pad mx-auto mt-12 max-w-lg py-12 text-center">
+      <p class="text-4xl">💔</p>
+      <p class="mt-3 text-ink-soft">You've dated every available book already — impressive! Check back when new books arrive.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

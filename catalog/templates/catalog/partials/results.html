@@ -1,0 +1,20 @@
+{% load retro %}
+<p class="mb-5 text-sm text-muted">{{ page.paginator.count }} book{{ page.paginator.count|pluralize }}{% if q %} matching “{{ q }}”{% endif %}</p>
+{% if page.object_list %}
+  <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 xl:grid-cols-4">
+    {% for book in page.object_list %}
+      <div class="animate-rise" style="animation-delay: {{ forloop.counter0|floatformat:0 }}0ms">{% book_card book %}</div>
+    {% endfor %}
+  </div>
+  {% include "partials/pagination.html" %}
+{% else %}
+  <div class="card-pad py-16 text-center">
+    <p class="text-5xl">🔭</p>
+    <h2 class="mt-4 font-display text-2xl font-semibold">Nothing on these shelves… yet</h2>
+    <p class="mt-2 text-ink-soft">Try fewer filters, a different spelling, or let fate decide.</p>
+    <div class="mt-6 flex justify-center gap-3">
+      <a href="{% url 'browse' %}" class="btn-outline">Clear filters</a>
+      <a href="{% url 'blind_date' %}" class="btn-primary">Try a blind date 💌</a>
+    </div>
+  </div>
+{% endif %}

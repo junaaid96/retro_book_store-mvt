@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Notifications · RetroBookStore{% endblock %}
+
+{% block content %}
+<div class="container-page max-w-3xl py-10">
+  <p class="label-mono">Inbox</p>
+  <h1 class="font-display text-4xl font-bold">Notifications</h1>
+  <ul class="card mt-8 divide-y divide-line overflow-hidden">
+    {% for n in items %}
+      <li>
+        <a href="{{ n.url|default:'#' }}" class="flex gap-4 p-5 hover:bg-paper-2/60 {% if not n.is_read %}bg-mustard/10{% endif %}">
+          <span class="text-2xl" aria-hidden="true">{{ n.icon }}</span>
+          <span class="flex-1">
+            <span class="block font-semibold">{{ n.title }}{% if not n.is_read %} <span class="pill-warn ml-1">new</span>{% endif %}</span>
+            {% if n.body %}<span class="mt-0.5 block text-sm text-ink-soft">{{ n.body }}</span>{% endif %}
+            <span class="mt-1 block text-xs text-muted">{{ n.created_at|timesince }} ago</span>
+          </span>
+        </a>
+      </li>
+    {% empty %}
+      <li class="p-12 text-center text-muted">Nothing here yet. We'll ping you about holds, due dates and badges.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

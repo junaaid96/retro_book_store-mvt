@@ -1,0 +1,17 @@
+{% extends "accounts/auth_base.html" %}
+{% block title %}Log in · RetroBookStore{% endblock %}
+{% block form %}
+<div class="card-pad sm:!p-10">
+  <h1 class="font-display text-3xl font-bold">Welcome back</h1>
+  <p class="mt-1 text-ink-soft">Your nightstand missed you.</p>
+  <form method="post" class="mt-8 space-y-5">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="rounded-xl bg-danger/10 p-3 text-sm text-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <div class="form-field">{{ form.username.label_tag }}{{ form.username }}</div>
+    <div class="form-field">{{ form.password.label_tag }}{{ form.password }}</div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn-primary btn-lg w-full">Log in</button>
+  </form>
+  <p class="mt-6 text-center text-sm text-muted">New to RetroBookStore? <a href="{% url 'register' %}" class="link font-semibold text-ink">Get a library card</a></p>
+</div>
+{% endblock %}

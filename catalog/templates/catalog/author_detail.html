@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load retro %}
+{% block title %}{{ author.name }} · RetroBookStore{% endblock %}
+
+{% block content %}
+<div class="container-page py-12">
+  <p class="label-mono">Author</p>
+  <h1 class="font-display text-5xl font-bold">{{ author.name }}</h1>
+  {% if author.bio %}<p class="mt-4 max-w-2xl text-lg text-ink-soft">{{ author.bio }}</p>{% endif %}
+  <p class="mt-2 text-muted">{{ books|length }} book{{ books|length|pluralize }} in the library</p>
+  <div class="mt-10 grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-6">
+    {% for book in books %}{% book_card book %}{% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -21,6 +21,24 @@ class CronSweepTests(TestCase):
         self.assertEqual(response.json()["reminders_sent"], 0)
 
 
+class FooterCreditTests(TestCase):
+    def test_footer_shows_developer_credit(self):
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="https://junaidul.pro.bd/codejborg"')
+        self.assertContains(response, 'target="_blank"')
+        self.assertContains(response, 'rel="noopener noreferrer"')
+        self.assertContains(response, 'aria-label="Developed by CodeJBorg')
+        self.assertContains(response, "CodeJBorg")
+
+    def test_credit_sits_between_copyright_and_search_hint(self):
+        html = self.client.get(reverse("home")).content.decode()
+        copyright_at = html.find("RetroBookStore · Covers courtesy")
+        credit_at = html.find("https://junaidul.pro.bd/codejborg")
+        hint_at = html.find("to search anywhere")
+        self.assertTrue(0 <= copyright_at < credit_at < hint_at)
+
+
 @override_settings(
     STORAGES={
         "default": {

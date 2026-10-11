@@ -21,6 +21,7 @@ from circulation.models import Hold, Loan
 from circulation.services import send_reminders
 
 from .achievements import BADGES, evaluate_badges
+from .demo import is_demo
 from .forms import DepositForm, LoginForm, ProfileForm, RegisterForm, UserForm
 from .models import Profile, Transaction
 from .services import WalletError, deposit
@@ -61,6 +62,10 @@ class RetroLoginView(LoginView):
     template_name = "accounts/login.html"
     authentication_form = LoginForm
     redirect_authenticated_user = True
+
+    def get_context_data(self, **kwargs):
+        from .demo import DEMO_ACCOUNTS, DEMO_PASSWORD
+        return {**super().get_context_data(**kwargs), "demo_accounts": DEMO_ACCOUNTS, "demo_password": DEMO_PASSWORD}
 
 
 def borrow_streak(user):
@@ -147,6 +152,10 @@ def wallet(request):
 def settings_view(request):
     user_form = UserForm(request.POST or None, instance=request.user, prefix="u")
     profile_form = ProfileForm(request.POST or None, instance=request.user.profile, prefix="p")
+    if is_demo(request.user):
+        # Demo accounts are shared: keep the login email fixed.
+        user_form.fields["email"].disabled = True
+        user_form.fields["email"].help_text = "Email can't be changed on demo accounts."
     if request.method == "POST" and user_form.is_valid() and profile_form.is_valid():
         user_form.save()
         profile_form.save()

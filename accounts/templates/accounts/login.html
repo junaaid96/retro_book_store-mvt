@@ -12,6 +12,18 @@
     <input type="hidden" name="next" value="{{ next }}">
     <button class="btn-primary btn-lg w-full">Log in</button>
   </form>
+  {% if demo_accounts %}
+  <div class="mt-8 rounded-2xl border border-dashed border-line p-4">
+    <p class="text-sm font-semibold">🧪 Explore the demo</p>
+    <p class="mt-1 text-xs text-muted">One click signs you in. Password for every demo account: <code class="font-mono">{{ demo_password }}</code></p>
+    <div class="mt-3 grid grid-cols-2 gap-2">
+      {% for acc in demo_accounts %}
+      <button type="button" class="btn-outline btn-sm w-full" data-demo-user="{{ acc.username }}"
+        onclick="var f=this.closest('div.card-pad').querySelector('form');f.querySelector('[name=username]').value=this.dataset.demoUser;f.querySelector('[name=password]').value='{{ demo_password }}';f.requestSubmit();">{{ acc.icon }} {{ acc.label }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
   <p class="mt-6 text-center text-sm text-muted">New to RetroBookStore? <a href="{% url 'register' %}" class="link font-semibold text-ink">Get a library card</a></p>
 </div>
 {% endblock %}

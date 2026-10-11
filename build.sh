@@ -5,3 +5,4 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 python manage.py migrate --no-input
 python manage.py seed_library   # idempotent: only adds missing catalogue rows
+python manage.py seed_demo      # idempotent: refreshes the public demo accounts

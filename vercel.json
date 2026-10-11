@@ -1,10 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then python manage.py migrate --noinput; else python manage.py check; fi",
+  "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then python manage.py migrate --noinput && python manage.py seed_demo; else python manage.py check; fi",
   "crons": [
-    { "path": "/cron/circulation-sweep/", "schedule": "0 2 * * *" }
+    {
+      "path": "/cron/circulation-sweep/",
+      "schedule": "0 2 * * *"
+    }
   ],
   "functions": {
-    "retro_book_store/wsgi.py": { "maxDuration": 60 }
+    "retro_book_store/wsgi.py": {
+      "maxDuration": 60
+    }
   }
 }

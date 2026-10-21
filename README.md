@@ -1,6 +1,6 @@
 # RetroBookStore — borrow stories, not shelves
 
-A neighbourhood lending library, reimagined. Django 5.2 (MVT) + Neon serverless Postgres, with a warm retro design, dark mode, and discovery features borrowed from the best of modern library and reading apps.
+A neighbourhood lending library, reimagined. Django 5.2 (MVT) + Neon serverless Postgres, with a warm retro design and discovery features borrowed from the best of modern library and reading apps.
 
 Live: https://retro-book-store.onrender.com
 
@@ -20,7 +20,7 @@ Live: https://retro-book-store.onrender.com
 | 💰 **Wallet ledger** | Append-only transaction history with running balance, quick top-ups, filters. |
 | 🔔 **Notifications** | Bell menu + inbox for holds ready, due soon, overdue, badges and deposits; optional emails. |
 | 🛠️ **Staff dashboard** | KPIs, 30-day loan chart, overdue list, most borrowed, and a "buy more copies?" list ranked by waitlist per copy. |
-| 🎨 **UI/UX** | Tailwind v4 design system, light/dark themes, generated fallback covers, Open Library cover art by ISBN, HTMX partial updates, responsive, keyboard- and screen-reader-friendly. |
+| 🎨 **UI/UX** | Tailwind v4 design system, generated fallback covers, Open Library cover art by ISBN, HTMX partial updates, responsive, keyboard- and screen-reader-friendly. |
 
 ## Architecture
 
